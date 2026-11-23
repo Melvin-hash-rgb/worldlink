@@ -296,6 +296,27 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .transfer-received { font-size: 1.25rem; font-weight: 800; color: var(--blue-dark); }
 .transfer-detail { color: var(--muted); font-size: 0.92rem; }
 
+/* Cartes visuelles façon Google : grande photo en tête, boutons d'action dessous */
+.visual-card { padding: 0; overflow: hidden; }
+.visual-card .card-body { padding: 14px 16px 16px; }
+.card-photo-big {
+  width: 100%; height: 210px; object-fit: cover; display: block;
+  border-radius: 12px 12px 0 0; background: #dfe8f7;
+}
+.card-photo-big.placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.2rem; background: linear-gradient(135deg, #dbe7ff, #f6e3ae);
+}
+
+/* Carte de la ville cherchée, affichée en haut des résultats */
+.map-wrap {
+  border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+  margin: 0 0 16px; background: var(--surface);
+}
+.map-wrap iframe { width: 100%; height: 240px; border: 0; display: block; }
+.map-caption { padding: 8px 12px; font-size: 0.9rem; color: var(--muted); }
+.map-caption a { color: var(--blue); font-weight: 700; }
+
 /* Détail d'un transfert, présenté comme un reçu : libellé à gauche, valeur à droite */
 .transfer-rows { margin: 10px 0 4px; }
 .trow {

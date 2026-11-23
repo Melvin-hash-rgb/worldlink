@@ -417,6 +417,50 @@ function arrivePanel(place, roomLabel, goTarget) {
 }
 
 /* ---------------- Cartes d'annonces ---------------- */
+/* Coordonnées approximatives des centres-villes (géographie publique) pour afficher la carte de la ville cherchée, comme Google. */
+const CITY_COORDS = {
+  douala: [4.0511, 9.7679], yaounde: [3.848, 11.5021], bafoussam: [5.4781, 10.4208],
+  bamenda: [5.9597, 10.1459], garoua: [9.3076, 13.3939], maroua: [10.5916, 14.3158],
+  ngaoundere: [7.3167, 13.5833], bertoua: [4.5833, 13.6833], buea: [4.156, 9.2632],
+  limbe: [4.0, 9.2167], kribi: [2.94, 9.91], edea: [3.8, 10.1333],
+  montreal: [45.5017, -73.5673], toronto: [43.6532, -79.3832], ottawa: [45.4215, -75.6972],
+  vancouver: [49.2827, -123.1207], quebec: [46.8139, -71.208],
+  paris: [48.8566, 2.3522], lyon: [45.764, 4.8357], marseille: [43.2965, 5.3698],
+  bruxelles: [50.8503, 4.3517], geneve: [46.2044, 6.1432], londres: [51.5074, -0.1278],
+  "new york": [40.7128, -74.006], dakar: [14.7167, -17.4677], abidjan: [5.36, -4.0083],
+  kinshasa: [-4.4419, 15.2663], brazzaville: [-4.2634, 15.2429], libreville: [0.4162, 9.4673],
+  ndjamena: [12.1348, 15.0557], bamako: [12.6392, -8.0029], ouagadougou: [12.3714, -1.5197],
+  cotonou: [6.3703, 2.3912], lome: [6.1375, 1.2221], accra: [5.6037, -0.187],
+  lagos: [6.5244, 3.3792], "pointe noire": [-4.7692, 11.8664], luanda: [-8.8383, 13.2344],
+  antananarivo: [-18.9137, 47.5361], "port au prince": [18.5421, -72.3368],
+};
+function findCityCoords(text) {
+  const t = norm(text || "");
+  if (!t) return null;
+  for (const name of Object.keys(CITY_COORDS)) {
+    if (t.includes(name)) return { name, lat: CITY_COORDS[name][0], lon: CITY_COORDS[name][1] };
+  }
+  return null;
+}
+function mapHtml(placeText, label) {
+  const c = findCityCoords(placeText);
+  if (!c) return "";
+  const bbox = (c.lon - 0.09) + "," + (c.lat - 0.055) + "," + (c.lon + 0.09) + "," + (c.lat + 0.055);
+  return '<div class="map-wrap"><iframe title="Carte" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=' +
+    bbox + "&layer=mapnik&marker=" + c.lat + "," + c.lon + '"></iframe>' +
+    '<p class="map-caption">📍 ' + esc(label || c.name) + ' — <a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(label || c.name) + '">Ouvrir dans Google Maps</a></p></div>';
+}
+function itineraireBtn(query) {
+  return '<a class="btn-action" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(query) + '">🧭 Itinéraire</a>';
+}
+function photoBig(url, emoji) {
+  const u = validPhoto(url);
+  if (u) return '<img class="card-photo-big" src="' + esc(u) + '" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=&quot;card-photo-big placeholder&quot;>' + emoji + '</div>\'">';
+  return '<div class="card-photo-big placeholder">' + emoji + "</div>";
+}
+
 function photoHtml(url, emoji) {
   const u = validPhoto(url);
   if (u) return '<img class="card-photo" src="' + esc(u) + '" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=&quot;card-photo placeholder&quot;>' + emoji + '</div>\'">';
@@ -424,16 +468,17 @@ function photoHtml(url, emoji) {
 }
 
 function proCard(p) {
-  return '<article class="card"><div class="card-head">' + photoHtml(p.photo_url, "🧑‍🔧") +
-    '<div class="card-main">' +
+  return '<article class="card visual-card">' + photoBig(p.photo_url, "🧑‍🔧") +
+    '<div class="card-body">' +
     '<p class="card-title">' + esc(p.name) + ' <span class="badge">' + esc(p.trade) + "</span></p>" +
     '<p class="card-meta">📍 ' + esc(p.city) + ", " + esc(p.country) +
     (p.age ? " · " + esc(p.age) + " ans" : "") + "</p>" +
     '<p class="card-meta">📞 ' + esc(p.phone) + "</p>" +
     '<div class="card-actions">' +
     '<a class="btn-action" href="tel:' + esc(String(p.phone).replace(/\s+/g, "")) + '">📞 Appeler</a>' +
+    itineraireBtn(p.trade + " " + p.city + " " + p.country) +
     '<button type="button" class="btn-action" data-share="' + esc(p.trade + " — " + p.name) + "|" + esc(p.city) + '">↗️ Partager</button>' +
-    "</div></div></div></article>";
+    "</div></div></article>";
 }
 
 function jobCard(j) {
@@ -444,6 +489,7 @@ function jobCard(j) {
     (j.description ? '<p class="card-desc">' + esc(j.description) + "</p>" : "") +
     '<div class="card-actions">' +
     '<button type="button" class="btn-action" data-contact="' + esc(j.contact) + '">✉️ Postuler / Contacter</button>' +
+    itineraireBtn(j.company + " " + j.city + " " + j.country) +
     '<button type="button" class="btn-action" data-share="' + esc(j.title + " chez " + j.company) + "|" + esc(j.city) + '">↗️ Partager</button>' +
     "</div>" +
     '<div class="card-contact hidden">📩 Pour postuler, envoie ton CV à : <strong>' + esc(j.contact) + "</strong></div>" +
@@ -451,18 +497,19 @@ function jobCard(j) {
 }
 
 function housingCard(h) {
-  return '<article class="card"><div class="card-head">' + photoHtml(h.photo_url, "🏠") +
-    '<div class="card-main">' +
+  return '<article class="card visual-card">' + photoBig(h.photo_url, "🏠") +
+    '<div class="card-body">' +
     '<p class="card-title">' + esc(h.title) + "</p>" +
     '<p class="card-meta">📍 ' + esc(h.city) + ", " + esc(h.country) + "</p>" +
     '<p class="card-price">' + fmtNum(h.price) + "</p>" +
     (h.description ? '<p class="card-desc">' + esc(h.description) + "</p>" : "") +
     '<div class="card-actions">' +
     (h.contact ? '<button type="button" class="btn-action" data-contact="' + esc(h.contact) + '">📞 Contacter le propriétaire</button>' : "") +
+    itineraireBtn(h.title + " " + h.city + " " + h.country) +
     '<button type="button" class="btn-action" data-share="' + esc(h.title) + "|" + esc(h.city) + '">↗️ Partager</button>' +
     "</div>" +
     (h.contact ? '<div class="card-contact hidden">📞 Contact du propriétaire : <strong>' + esc(h.contact) + "</strong></div>" : "") +
-    "</div></div></article>";
+    "</div></article>";
 }
 
 function likesCount(postId) { return DATA.likes.filter((l) => l.post_id === postId).length; }
@@ -477,8 +524,8 @@ function postCard(p) {
   const commentsHtml = comments.map((c) =>
     '<div class="comment"><span class="c-author">' + esc(c.author_name || "Utilisateur") +
     " :</span> " + esc(c.body) + "</div>").join("");
-  return '<article class="card"><div class="card-head">' + photoHtml(p.photo_url, "🛍️") +
-    '<div class="card-main">' +
+  return '<article class="card visual-card">' + photoBig(p.photo_url, "🛍️") +
+    '<div class="card-body">' +
     '<p class="card-title">' + esc(p.title) + "</p>" +
     '<p class="card-meta">📍 ' + esc(p.city) + (p.country ? ", " + esc(p.country) : "") +
     (p.seller_name ? " · Vendeur : " + esc(p.seller_name) : "") + "</p>" +
@@ -488,6 +535,7 @@ function postCard(p) {
     '<button type="button" class="btn-action' + (liked ? " liked" : "") + '" data-like="' + p.id + '">' + (liked ? "❤️" : "🤍") + " J'aime (" + likesCount(p.id) + ")</button>" +
     '<button type="button" class="btn-action" data-comments="' + p.id + '">💬 Commentaires (' + comments.length + ")</button>" +
     '<button type="button" class="btn-action" data-contact="' + esc(p.contact) + '">🛒 Commander</button>' +
+    itineraireBtn(p.title + " " + p.city + " " + (p.country || "")) +
     '<button type="button" class="btn-action" data-share="' + esc(p.title) + "|" + esc(p.city) + '">↗️ Partager</button>' +
     "</div>" +
     '<div class="card-contact hidden">🛒 Pour commander, contacte le vendeur : <strong>' + esc(p.contact) + "</strong></div>" +
@@ -495,7 +543,7 @@ function postCard(p) {
     '<form class="comment-form" data-comment-form="' + p.id + '">' +
     '<input type="text" placeholder="Écris un commentaire…" required maxlength="500">' +
     '<button type="submit" class="btn-outline">Envoyer</button></form></div>' +
-    "</div></div></article>";
+    "</div></article>";
 }
 
 /* ---------------- Recherche d'accueil (toutes les pièces) ---------------- */
@@ -516,7 +564,7 @@ function doHomeSearch(e) {
   const housing = DATA.housing.filter((h) => matchesQuery(h, ["title", "city", "country"], q));
   const posts = DATA.posts.filter((p) => matchesQuery(p, ["title", "city", "country", "description"], q));
 
-  let html = "";
+  let html = mapHtml($("#home-search").value, $("#home-search").value.trim());
   if (!pros.length && !jobs.length && !housing.length && !posts.length) {
     html += arrivePanel($("#home-search").value.trim(), "les pièces", "home");
     html += "<h3 class='section-title'>En attendant, tout ce qui est déjà publié</h3>";
@@ -562,6 +610,13 @@ function renderTravail() {
   }
   $("#pros-list").innerHTML = prosHtml;
   $("#jobs-list").innerHTML = jobsHtml;
+  /* Carte de la ville cherchée en haut des résultats, comme Google Maps. */
+  let mapPlace = "", mapLabel = "";
+  if (jobFilter.place) { mapPlace = jobFilter.place; mapLabel = jobFilter.place; }
+  else if (pros[0]) { mapPlace = pros[0].city; mapLabel = pros[0].city; }
+  else if (jobs[0]) { mapPlace = jobs[0].city; mapLabel = jobs[0].city; }
+  const mapBox = $("#travail-map");
+  if (mapBox) mapBox.innerHTML = mapHtml(mapPlace, mapLabel);
 }
 
 function handleJobSearch(e) {
