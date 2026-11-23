@@ -296,6 +296,17 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .transfer-received { font-size: 1.25rem; font-weight: 800; color: var(--blue-dark); }
 .transfer-detail { color: var(--muted); font-size: 0.92rem; }
 
+/* Détail d'un transfert, présenté comme un reçu : libellé à gauche, valeur à droite */
+.transfer-rows { margin: 10px 0 4px; }
+.trow {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+  font-size: 0.93rem;
+}
+.trow:last-child { border-bottom: none; }
+.trow span { color: var(--muted); }
+.trow strong { color: var(--blue-dark); text-align: right; }
+
 /* ---------- Découverte ---------- */
 .tabs { display: flex; gap: 8px; margin: 12px 0 16px; }
 .tab-btn {

@@ -803,7 +803,8 @@ function computeTransfers(amount, fromCurrency, destination) {
     const received = dest
       ? Math.max(0, eurAmount - s.fixed) * (1 - s.pct / 100) * dest.rate * (1 - s.margin / 100)
       : null;
-    return { ...s, received, feeFrom, destCode: dest ? dest.code : null };
+    const rate = dest ? (EUR_VALUE[fromCurrency] || 1) * dest.rate * (1 - s.margin / 100) : null;
+    return { ...s, received, feeFrom, rate, destCode: dest ? dest.code : null };
   });
   if (dest) results.sort((a, b) => b.received - a.received);
   return results;
@@ -833,8 +834,13 @@ function renderTransfers() {
       (known && i === 0 ? '<span class="best-badge">⭐ Meilleur reçu</span>' : "") +
       '<p class="card-title">' + esc(r.name) + "</p>" +
       (known ? '<p class="transfer-received">La famille reçoit ≈ ' + fmtNum(Math.round(r.received)) + " " + esc(r.destCode) + "</p>" : "") +
-      '<p class="transfer-detail">Frais estimés : ≈ ' + fmtNum(Math.round(r.feeFrom * 10) / 10) + " " + esc(symbols[from] || from) +
-      " · Délai : " + esc(r.delay) + " · Réception : Mobile Money, banque ou espèces selon le service</p>" +
+      '<div class="transfer-rows">' +
+      '<div class="trow"><span>Tu envoies</span><strong>' + fmtNum(amount) + " " + esc(from) + "</strong></div>" +
+      (known ? '<div class="trow"><span>Taux de change</span><strong>1 ' + esc(from) + " = " + fmtNum(Math.round(r.rate * 100) / 100) + " " + esc(r.destCode) + "</strong></div>" : "") +
+      '<div class="trow"><span>Frais estimés</span><strong>≈ ' + fmtNum(Math.round(r.feeFrom * 10) / 10) + " " + esc(from) + "</strong></div>" +
+      '<div class="trow"><span>Délai estimé</span><strong>' + esc(r.delay) + "</strong></div>" +
+      '<div class="trow"><span>Réception</span><strong>Mobile Money, banque ou espèces</strong></div>' +
+      "</div>" +
       '<div class="card-actions"><a class="btn-gold" style="text-decoration:none" target="_blank" rel="noopener" href="' + r.url + '">Envoyer avec ' + esc(r.name) + "</a></div>" +
       "</article>").join("");
 }
