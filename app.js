@@ -587,15 +587,32 @@ function doHomeSearch(e) {
   showPage("results");
 }
 
-/* ---------------- Accueil : les nouveautés (vraies dernières annonces) ---------------- */
+/* ---------------- Accueil : le fil, façon Facebook ----------------
+   Une rangée de photos (comme les stories), puis toutes les annonces
+   mélangées, de la plus récente à la plus ancienne, en grandes cartes. */
+function storyCard(photo, label, sub) {
+  const u = validPhoto(photo);
+  const img = u ? '<img src="' + esc(u) + '" alt="" loading="lazy">' : '<div class="story-ph">🖼️</div>';
+  return '<div class="story-card">' + img + '<span class="story-label">' + esc(label) +
+    (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></div>";
+}
 function renderHomeLatest() {
   const box = $("#home-latest-content");
   if (!box) return;
-  const items = DATA.pros.slice(0, 2).map(proCard).join("") +
-    DATA.housing.slice(0, 2).map(housingCard).join("") +
-    DATA.posts.slice(0, 2).map(postCard).join("");
-  box.innerHTML = items ||
-    '<p class="empty-note">WorldLink vient d\'ouvrir : les premières annonces arrivent. Publie la tienne et sois parmi les premiers de ta ville.</p>';
+  const stories = DATA.pros.slice(0, 6).map((p) => storyCard(p.photo_url, p.name, p.trade)).join("") +
+    DATA.posts.slice(0, 6).map((p) => storyCard(p.photo_url, p.title, p.city)).join("");
+  const feed = [
+    ...DATA.pros.map((x) => ({ t: x.created_at, html: proCard(x) })),
+    ...DATA.jobs.map((x) => ({ t: x.created_at, html: jobCard(x) })),
+    ...DATA.housing.map((x) => ({ t: x.created_at, html: housingCard(x) })),
+    ...DATA.posts.map((x) => ({ t: x.created_at, html: postCard(x) })),
+  ].sort((a, b) => String(b.t || "").localeCompare(String(a.t || "")));
+  if (!feed.length) {
+    box.innerHTML = '<p class="empty-note">WorldLink vient d\'ouvrir : les premières annonces arrivent. Publie la tienne et sois parmi les premiers de ta ville.</p>';
+    return;
+  }
+  box.innerHTML = (stories ? '<div class="stories-row">' + stories + "</div>" : "") +
+    feed.map((f) => f.html).join("");
 }
 
 /* ---------------- Page Contact ---------------- */
