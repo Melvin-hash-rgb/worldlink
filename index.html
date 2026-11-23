@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorldLink — Faciliter la vie aux gens</title>
+<meta name="description" content="WorldLink : trouve un emploi, un professionnel, un logement, commande au marché, compare les transferts d'argent et découvre le monde. Faciliter la vie aux gens.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WorldLink">
+<meta property="og:title" content="WorldLink — Faciliter la vie aux gens">
+<meta property="og:description" content="Trouve un emploi, un professionnel près de chez toi, un logement, commande au marché, compare les transferts d'argent et découvre le monde — dans une seule application.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="WorldLink — Faciliter la vie aux gens">
+<meta name="twitter:description" content="Travail, logement, marché, transferts et découverte du monde — dans une seule application.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ ÉCRAN DE CHARGEMENT ============ -->
+<div id="view-loading" class="screen-center">
+  <div class="brand-mark">🌍</div>
+  <div class="brand-name">WorldLink</div>
+  <p class="muted">Chargement…</p>
+</div>
+
+<!-- ============ CONFIGURATION MANQUANTE ============ -->
+<div id="view-config" class="screen-center hidden">
+  <div class="brand-mark">🌍</div>
+  <div class="brand-name">WorldLink</div>
+  <div class="notice-card">
+    <h2>WorldLink n'est pas encore branché</h2>
+    <p>La base de données n'est pas configurée : le fichier <strong>config.js</strong> ne contient pas encore l'adresse du projet Supabase.</p>
+    <p>Si tu es le propriétaire du site, suis le guide <strong>README.md</strong> (étape 2) : crée un projet gratuit sur Supabase, puis colle l'URL du projet et la clé « anon » dans <strong>config.js</strong>.</p>
+    <p>Ensuite, recharge cette page — tout fonctionnera.</p>
+  </div>
+</div>
+
+<!-- ============ PORTE D'ENTRÉE (connexion / création de compte) ============ -->
+<div id="view-auth" class="hidden">
+  <div class="auth-hero">
+    <div class="brand-mark big">🌍</div>
+    <h1 class="brand-name light">WorldLink</h1>
+    <p class="slogan">Faciliter la vie aux gens</p>
+    <p class="auth-tagline">Travail, logement, marché, transferts et découverte du monde — dans n'importe quelle ville, dans n'importe quel pays.</p>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button type="button" id="tab-login" class="auth-tab active">Se connecter</button>
+      <button type="button" id="tab-signup" class="auth-tab">Créer un compte</button>
+    </div>
+
+    <!-- Connexion -->
+    <form id="form-login" class="auth-form">
+      <label>Courriel
+        <input type="email" id="login-email" required autocomplete="email" placeholder="ton@courriel.com">
+      </label>
+      <label>Mot de passe
+        <input type="password" id="login-password" required autocomplete="current-password" placeholder="Ton mot de passe">
+      </label>
+      <p id="login-msg" class="form-msg"></p>
+      <button type="submit" class="btn-gold big-btn">Se connecter</button>
+    </form>
+
+    <!-- Création de compte -->
+    <form id="form-signup" class="auth-form hidden">
+      <label>Nom complet
+        <input type="text" id="signup-name" required autocomplete="name" placeholder="Ex. : Amina Diallo">
+      </label>
+      <label>Courriel
+        <input type="email" id="signup-email" required autocomplete="email" placeholder="ton@courriel.com">
+      </label>
+      <label>Mot de passe
+        <input type="password" id="signup-password" required autocomplete="new-password" minlength="6" placeholder="6 caractères minimum">
+      </label>
+      <label>Confirme ton mot de passe
+        <input type="password" id="signup-password2" required autocomplete="new-password" placeholder="Le même mot de passe">
+      </label>
+      <p id="signup-msg" class="form-msg"></p>
+      <button type="submit" class="btn-gold big-btn">Créer mon compte</button>
+      <p class="tiny muted">En créant un compte, tu pourras publier tes annonces, t'inscrire comme professionnel et retrouver tes publications. Personne d'autre ne peut entrer dans ton compte : il est protégé par ton mot de passe.</p>
+    </form>
+  </div>
+
+  <p class="auth-footer">WorldLink — Faciliter la vie aux gens</p>
+</div>
+
+<!-- ============ APPLICATION (utilisateur connecté) ============ -->
+<div id="view-app" class="hidden">
+  <header class="app-header">
+    <button type="button" class="logo-btn" data-go="home" aria-label="Accueil WorldLink">
+      <span class="logo-globe">🌍</span><span class="logo-text">WorldLink</span>
+    </button>
+    <div class="header-actions">
+      <span id="hello-user" class="hello"></span>
+      <button type="button" class="btn-header" data-go="mes-publications">Mes publications</button>
+      <button type="button" class="btn-header" id="btn-logout">Se déconnecter</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ===== ACCUEIL ===== -->
+    <section id="page-home" class="page">
+      <div class="hero">
+        <h2 class="hero-title">Que cherches-tu ?</h2>
+        <p class="hero-sub">Tape ce que tu veux et où tu veux — n'importe quelle ville, n'importe quel pays du monde.</p>
+        <form id="form-home-search" class="search-bar">
+          <input type="text" id="home-search" placeholder="Ex. : plombier à Douala, studio à Yaoundé, emploi à Toronto…" autocomplete="off">
+          <button type="submit" class="btn-gold">Chercher</button>
+        </form>
+      </div>
+
+      <div class="rooms-grid">
+        <button type="button" class="room-card" data-go="travail">
+          <span class="room-icon">💼</span>
+          <span class="room-title">Travail</span>
+          <span class="room-desc">Emplois près de chez toi et professionnels de tous les métiers</span>
+        </button>
+        <button type="button" class="room-card" data-go="logement">
+          <span class="room-icon">🏠</span>
+          <span class="room-title">Logement</span>
+          <span class="room-desc">Maisons et appartements à louer, selon ta ville et ton budget</span>
+        </button>
+        <button type="button" class="room-card" data-go="marche">
+          <span class="room-icon">🛒</span>
+          <span class="room-title">Marché &amp; Livraison</span>
+          <span class="room-desc">Annonces, commandes et livraison à domicile</span>
+        </button>
+        <button type="button" class="room-card" data-go="transferts">
+          <span class="room-icon">💸</span>
+          <span class="room-title">Transferts</span>
+          <span class="room-desc">Compare les services pour envoyer de l'argent au pays</span>
+        </button>
+        <button type="button" class="room-card" data-go="decouverte">
+          <span class="room-icon">✈️</span>
+          <span class="room-title">Découverte</span>
+          <span class="room-desc">Images, vidéos et actualités du monde entier</span>
+        </button>
+        <button type="button" class="room-card gold" data-go="assistant">
+          <span class="room-icon">💬</span>
+          <span class="room-title">Assistant WorldLink</span>
+          <span class="room-desc">Pose ta question avec tes mots — il cherche pour toi</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== RÉSULTATS DE RECHERCHE ===== -->
+    <section id="page-results" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">Résultats de ta recherche</h2>
+      <p id="results-query" class="muted"></p>
+      <div id="results-content"></div>
+    </section>
+
+    <!-- ===== TRAVAIL ===== -->
+    <section id="page-travail" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">💼 Travail</h2>
+      <p class="page-sub">Trouve un emploi près de chez toi, ou le professionnel qu'il te faut — dans n'importe quelle ville du monde.</p>
+
+      <form id="form-job-search" class="filter-bar">
+        <input type="text" id="search-trade" placeholder="Métier ou poste (ex. : plombier, infirmière…)">
+        <input type="text" id="search-jobplace" placeholder="Ville ou pays (ex. : Douala, Canada…)">
+        <button type="submit" class="btn-gold">Chercher</button>
+      </form>
+
+      <h3 class="section-title">Professionnels inscrits</h3>
+      <div id="pros-list"></div>
+
+      <h3 class="section-title">Offres d'emploi</h3>
+      <div id="jobs-list"></div>
+
+      <details class="publish-box">
+        <summary>➕ S'inscrire comme professionnel</summary>
+        <form id="form-pro" class="stack-form">
+          <label>Nom complet <input type="text" id="pro-name" required></label>
+          <label>Métier <input type="text" id="pro-trade" required placeholder="Ex. : Plombier, Infirmière, Avocat…"></label>
+          <label>Âge <input type="number" id="pro-age" min="16" max="100"></label>
+          <label>Ville <input type="text" id="pro-city" required></label>
+          <label>Pays <input type="text" id="pro-country" required></label>
+          <label>Numéro de contact <input type="tel" id="pro-phone" required placeholder="Le numéro que les clients appelleront"></label>
+          <label>Photo (lien URL, optionnel) <input type="url" id="pro-photo" placeholder="https://…"></label>
+          <label>📷 Ou choisis une photo dans ton téléphone <input type="file" id="pro-photo-file" accept="image/*"></label>
+          <img id="pro-photo-preview" class="photo-preview hidden" alt="Aperçu de ta photo">
+          <p class="form-msg" id="pro-msg"></p>
+          <button type="submit" class="btn-gold">Publier mon profil</button>
+        </form>
+      </details>
+
+      <details class="publish-box">
+        <summary>➕ Publier une offre d'emploi (employeurs)</summary>
+        <form id="form-job" class="stack-form">
+          <label>Intitulé du poste <input type="text" id="job-title" required placeholder="Ex. : Serveur, Comptable, Chauffeur…"></label>
+          <label>Entreprise <input type="text" id="job-company" required></label>
+          <label>Ville <input type="text" id="job-city" required></label>
+          <label>Pays <input type="text" id="job-country" required></label>
+          <label>Type
+            <select id="job-type">
+              <option>Temps plein</option>
+              <option>Temps partiel</option>
+            </select>
+          </label>
+          <label>Description <textarea id="job-desc" rows="3" placeholder="Le travail, les horaires, le salaire si tu veux…"></textarea></label>
+          <label>Contact pour postuler (courriel ou téléphone) <input type="text" id="job-contact" required placeholder="Où envoyer le CV"></label>
+          <p class="form-msg" id="job-msg"></p>
+          <button type="submit" class="btn-gold">Publier l'offre</button>
+        </form>
+      </details>
+    </section>
+
+    <!-- ===== LOGEMENT ===== -->
+    <section id="page-logement" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">🏠 Logement</h2>
+      <p class="page-sub">Tape ta ville et ton <strong>budget de départ</strong> : on te montre les logements à partir de ta somme, en montant — jamais en dessous, jamais des sommes lointaines.</p>
+
+      <form id="form-housing-search" class="filter-bar">
+        <input type="text" id="search-housecity" placeholder="Ville ou pays (ex. : Douala, Stockholm…)">
+        <input type="number" id="search-budget" min="0" placeholder="Ton budget de départ (ex. : 50 000)">
+        <button type="submit" class="btn-gold">Chercher</button>
+      </form>
+
+      <div id="housing-list"></div>
+
+      <details class="publish-box">
+        <summary>➕ Publier mon logement à louer</summary>
+        <form id="form-housing" class="stack-form">
+          <label>Titre <input type="text" id="house-title" required placeholder="Ex. : Studio moderne à Akwa"></label>
+          <label>Ville <input type="text" id="house-city" required></label>
+          <label>Pays <input type="text" id="house-country" required></label>
+          <label>Prix (loyer, dans la monnaie du pays) <input type="number" id="house-price" min="0" required placeholder="Ex. : 75 000"></label>
+          <label>Description <textarea id="house-desc" rows="3" placeholder="Pièces, quartier, eau/électricité, conditions…"></textarea></label>
+          <label>Photo (lien URL, optionnel) <input type="url" id="house-photo" placeholder="https://…"></label>
+          <label>📷 Ou choisis une photo dans ton téléphone <input type="file" id="house-photo-file" accept="image/*"></label>
+          <img id="house-photo-preview" class="photo-preview hidden" alt="Aperçu de ta photo">
+          <label>Ton contact (téléphone ou courriel) <input type="text" id="house-contact" placeholder="Pour que les intéressés te joignent"></label>
+          <p class="form-msg" id="house-msg"></p>
+          <button type="submit" class="btn-gold">Publier le logement</button>
+        </form>
+      </details>
+    </section>
+
+    <!-- ===== MARCHÉ & LIVRAISON ===== -->
+    <section id="page-marche" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">🛒 Marché &amp; Livraison</h2>
+      <p class="page-sub">Les annonces des vendeurs : regarde, lis les commentaires, et commande sans te déplacer.</p>
+
+      <div id="market-list"></div>
+
+      <details class="publish-box">
+        <summary>➕ Publier une annonce de vente</summary>
+        <form id="form-post" class="stack-form">
+          <label>Qu'est-ce que tu vends ? <input type="text" id="post-title" required placeholder="Ex. : Babouches en cuir, Ndolé frais, Robe en pagne…"></label>
+          <label>Prix <input type="number" id="post-price" min="0" placeholder="Ex. : 5 000"></label>
+          <label>Ville <input type="text" id="post-city" required></label>
+          <label>Pays <input type="text" id="post-country" placeholder="Ex. : Cameroun"></label>
+          <label>Description <textarea id="post-desc" rows="3" placeholder="État, tailles, livraison possible…"></textarea></label>
+          <label>Photo (lien URL, optionnel) <input type="url" id="post-photo" placeholder="https://…"></label>
+          <label>📷 Ou choisis une photo dans ton téléphone <input type="file" id="post-photo-file" accept="image/*"></label>
+          <img id="post-photo-preview" class="photo-preview hidden" alt="Aperçu de ta photo">
+          <label>Ton contact pour les commandes <input type="text" id="post-contact" required placeholder="Téléphone / WhatsApp"></label>
+          <p class="form-msg" id="post-msg"></p>
+          <button type="submit" class="btn-gold">Publier l'annonce</button>
+        </form>
+      </details>
+    </section>
+
+    <!-- ===== TRANSFERTS ===== -->
+    <section id="page-transferts" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">💸 Transferts d'argent</h2>
+      <p class="page-sub">Compare les vrais services d'envoi d'argent : frais, taux et délai. Tu choisis le meilleur, puis tu envoies <strong>chez le service officiel</strong>.</p>
+
+      <form id="form-transfer" class="filter-bar">
+        <input type="number" id="transfer-amount" min="1" placeholder="Montant à envoyer (ex. : 200)">
+        <input type="text" id="transfer-destination" placeholder="Pays de destination (ex. : Cameroun)">
+        <select id="transfer-currency" aria-label="Devise d'envoi">
+          <option value="CAD">Depuis : $ CAD</option>
+          <option value="EUR">Depuis : € EUR</option>
+          <option value="USD">Depuis : $ USD</option>
+          <option value="GBP">Depuis : £ GBP</option>
+        </select>
+        <button type="submit" class="btn-gold">Comparer</button>
+      </form>
+
+      <div id="transfer-results"></div>
+
+      <div class="notice-card">
+        <p><strong>WorldLink ne touche jamais à ton argent.</strong> WorldLink compare seulement : l'envoi se fait chez le service officiel que tu choisis. Les frais, taux et délais affichés sont <strong>indicatifs</strong> — le prix final est celui du service officiel au moment de l'envoi.</p>
+      </div>
+    </section>
+
+    <!-- ===== DÉCOUVERTE ===== -->
+    <section id="page-decouverte" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">✈️ Découverte</h2>
+      <p class="page-sub">Le monde entier à regarder : choisis ce que tu veux voir.</p>
+
+      <div class="tabs">
+        <button type="button" class="tab-btn active" data-dtab="images">🖼️ Images</button>
+        <button type="button" class="tab-btn" data-dtab="videos">🎬 Vidéos</button>
+        <button type="button" class="tab-btn" data-dtab="actus">📰 Actualités</button>
+      </div>
+
+      <div id="dtab-images" class="dtab-panel">
+        <div id="discovery-images" class="media-grid"></div>
+        <p class="tiny muted">Photos libres de droits — Wikimedia Commons.</p>
+      </div>
+      <div id="dtab-videos" class="dtab-panel hidden">
+        <div id="discovery-videos" class="media-grid"></div>
+        <p class="tiny muted">Vidéos libres — Wikimedia Commons (le lien ouvre la page des vidéos).</p>
+      </div>
+      <div id="dtab-actus" class="dtab-panel hidden">
+        <div id="discovery-news" class="media-grid"></div>
+        <p class="tiny muted">Les liens ouvrent les sites officiels des médias.</p>
+      </div>
+    </section>
+
+    <!-- ===== ASSISTANT ===== -->
+    <section id="page-assistant" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">💬 Assistant WorldLink</h2>
+      <p class="page-sub">Parle-lui comme à une personne : il cherche dans WorldLink et te montre les résultats.</p>
+
+      <div id="chat-log" class="chat-log"></div>
+
+      <div class="chips">
+        <button type="button" class="chip" data-q="Je cherche un plombier à Douala">Je cherche un plombier à Douala</button>
+        <button type="button" class="chip" data-q="Je veux un appartement à 50 000 à Douala">Un appartement à 50 000 à Douala</button>
+        <button type="button" class="chip" data-q="Quels emplois à Toronto ?">Quels emplois à Toronto ?</button>
+        <button type="button" class="chip" data-q="Comment envoyer de l'argent au Cameroun ?">Envoyer de l'argent au Cameroun</button>
+      </div>
+
+      <form id="form-chat" class="chat-form">
+        <input type="text" id="chat-input" placeholder="Pose ta question…" autocomplete="off">
+        <button type="submit" class="btn-gold">Envoyer</button>
+      </form>
+    </section>
+
+    <!-- ===== MES PUBLICATIONS ===== -->
+    <section id="page-mes-publications" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">📂 Mes publications</h2>
+      <p class="page-sub">Tout ce que TU as publié avec ton compte. Toi seul peux supprimer tes publications.</p>
+      <div id="my-content"></div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>🌍 <strong>WorldLink</strong> — Faciliter la vie aux gens</p>
+  </footer>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
