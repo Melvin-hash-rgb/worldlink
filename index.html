@@ -12,7 +12,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="WorldLink — Faciliter la vie aux gens">
 <meta name="twitter:description" content="Travail, logement, marché, transferts et découverte du monde — dans une seule application.">
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
 
@@ -21,7 +21,18 @@
   <div class="brand-mark">🌍</div>
   <div class="brand-name">WorldLink</div>
   <p class="muted">Chargement…</p>
+  <div id="slow-note" class="notice-card hidden">
+    <p><strong>C'est long à charger.</strong> Ta connexion est peut-être lente. Attends encore un peu, ou recharge la page. Si ça ne marche toujours pas, ouvre ce lien dans le navigateur <strong>Chrome</strong> : touche le menu ⋮ puis « Ouvrir dans Chrome ».</p>
+    <button type="button" class="btn-gold" onclick="location.reload()">🔄 Recharger la page</button>
+  </div>
 </div>
+<script>
+/* Si l'application n'a pas démarré après 8 secondes, on explique au lieu de laisser un écran vide. */
+setTimeout(function () {
+  var n = document.getElementById("slow-note");
+  if (n && !window.__wlReady) n.classList.remove("hidden");
+}, 8000);
+</script>
 
 <!-- ============ CONFIGURATION MANQUANTE ============ -->
 <div id="view-config" class="screen-center hidden">
@@ -519,8 +530,8 @@
 
 <div id="toast" class="toast hidden"></div>
 
-<script src="config.js?v=14"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js?v=14"></script>
+<script src="config.js?v=15"></script>
+<script src="supabase.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

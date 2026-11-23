@@ -1390,6 +1390,7 @@ function wireEvents() {
 
 /* ---------------- Démarrage ---------------- */
 function init() {
+  window.__wlReady = true;
   wireEvents();
   const cfg = window.WORLDLINK_CONFIG || {};
   if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
