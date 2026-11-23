@@ -301,7 +301,15 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
   position: relative; min-width: 108px; width: 108px; height: 140px;
   border-radius: 14px; overflow: hidden; flex-shrink: 0;
   background: linear-gradient(150deg, var(--blue), var(--blue-dark));
+  border: none; padding: 0; cursor: pointer; font: inherit; text-align: left;
 }
+
+/* La publication qu'on vient d'ouvrir depuis une story : un halo doré qui pulse */
+@keyframes flashRing {
+  0%, 100% { box-shadow: var(--shadow); }
+  30%, 70% { box-shadow: 0 0 0 3px var(--gold), var(--shadow); }
+}
+.flash { animation: flashRing 1.2s ease 2; }
 .story-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .story-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
 .story-label {
@@ -471,7 +479,8 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .visual-card { padding: 0; overflow: hidden; }
 .visual-card .card-body { padding: 14px 16px 16px; }
 .card-photo-big {
-  width: 100%; height: 210px; object-fit: cover; display: block;
+  width: 100%; height: 200px; object-fit: cover; object-position: center 18%;
+  display: block;
   border-radius: 12px 12px 0 0; background: #dfe8f7;
 }
 .card-photo-big.placeholder {

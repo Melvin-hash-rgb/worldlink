@@ -193,16 +193,18 @@ const DISCO_VIDEOS = [
 ];
 
 const DISCO_NEWS = [
-  ["L'actualité africaine", "BBC Afrique", "https://www.bbc.com/afrique", "Yaounde,_Cameroon.jpg"],
-  ["L'actualité du Cameroun", "Journal du Cameroun", "https://www.journalducameroun.com/", "Mount_Cameroon.jpg"],
-  ["Infos du Cameroun", "Cameroon Tribune", "https://www.cameroon-tribune.cm/", "Mount_Kilimanjaro.jpg"],
-  ["Le monde en français", "RFI", "https://www.rfi.fr/fr/", "Tour_Eiffel_Wikimedia_Commons.jpg"],
-  ["Nouvelles internationales", "France 24", "https://www.france24.com/fr/", "Louvre_Museum_Wikimedia_Commons.jpg"],
-  ["L'actualité du Canada", "Radio-Canada", "https://ici.radio-canada.ca/", "Montreal_Skyline.jpg"],
-  ["L'actualité du monde", "Le Monde", "https://www.lemonde.fr/", "Big_Ben_2007-1.jpg"],
-  ["Infos francophones", "TV5Monde", "https://www.tv5monde.com/", "Statue_of_Liberty_frontal_2.jpg"],
-  ["L'actualité européenne", "Euronews", "https://fr.euronews.com/", "Colosseum_in_Rome,_Italy_-_April_2007.jpg"],
-  ["Le monde vu d'Allemagne", "DW — Deutsche Welle", "https://www.dw.com/fr/", "Machu_Picchu,_Peru.jpg"]
+  ["⚽ Football africain : toute l'actualité", "CAF", "https://www.cafonline.com/", "Colosseum_in_Rome,_Italy_-_April_2007.jpg"],
+  ["⚽ Football mondial : toute l'actualité", "FIFA", "https://www.fifa.com/", "Big_Ben_2007-1.jpg"],
+  ["🏆 Tous les sports, en direct", "L'Équipe", "https://www.lequipe.fr/", "Tour_Eiffel_Wikimedia_Commons.jpg"],
+  ["🇨🇲 L'actualité du Cameroun", "Actu Cameroun", "https://actucameroun.com/", "Mount_Cameroon.jpg"],
+  ["🇨🇲 Infos du Cameroun", "Cameroon Tribune", "https://www.cameroon-tribune.cm/", "Yaounde,_Cameroon.jpg"],
+  ["🌍 L'actualité africaine", "RFI", "https://www.rfi.fr/fr/afrique/", "Pyramids_of_the_Giza_Necropolis.jpg"],
+  ["🌍 L'Afrique en direct", "BBC Afrique", "https://www.bbc.com/afrique", "Victoria_Falls_2012.jpg"],
+  ["💼 Économie et société en Afrique", "Jeune Afrique", "https://www.jeuneafrique.com/", "Marina_Bay_Sands,_Singapore.jpg"],
+  ["🌐 Le monde en direct", "France 24", "https://www.france24.com/fr/", "Louvre_Museum_Wikimedia_Commons.jpg"],
+  ["🎭 Culture et monde francophone", "TV5Monde", "https://www.tv5monde.com/", "Sydney_Opera_House_-_Dec_2008.jpg"],
+  ["🇨🇦 L'actualité du Canada", "Radio-Canada", "https://ici.radio-canada.ca/", "Montreal_Skyline.jpg"],
+  ["🏥 Santé : les infos de l'OMS", "OMS", "https://www.who.int/fr", "Moraine_Lake.jpg"]
 ];
 
 /* ---------------- Données statiques : Transferts ---------------- */
@@ -475,7 +477,7 @@ function photoHtml(url, emoji) {
 
 function proCard(p) {
   const tel = esc(String(p.phone).replace(/\s+/g, ""));
-  return '<article class="card visual-card">' + photoBig(p.photo_url, "🧑‍🔧") +
+  return '<article class="card visual-card" id="card-pro-' + p.id + '">' + photoBig(p.photo_url, "🧑‍🔧") +
     '<div class="card-body">' +
     '<p class="card-title">' + esc(p.name) + ' <span class="badge">' + esc(p.trade) + "</span></p>" +
     '<p class="card-meta">📍 ' + esc(p.city) + ", " + esc(p.country) +
@@ -537,7 +539,7 @@ function postCard(p) {
   const commentsHtml = comments.map((c) =>
     '<div class="comment"><span class="c-author">' + esc(c.author_name || "Utilisateur") +
     " :</span> " + esc(c.body) + "</div>").join("");
-  return '<article class="card ig-post">' +
+  return '<article class="card ig-post" id="card-post-' + p.id + '">' +
     '<div class="ig-head"><span class="ig-avatar">' + initial + '</span>' +
     '<span class="ig-who"><strong>' + esc(seller) + "</strong>" +
     '<span class="ig-where">📍 ' + esc(p.city) + (p.country ? ", " + esc(p.country) : "") + "</span></span></div>" +
@@ -605,17 +607,18 @@ function doHomeSearch(e) {
 /* ---------------- Accueil : le fil, façon Facebook ----------------
    Une rangée de photos (comme les stories), puis toutes les annonces
    mélangées, de la plus récente à la plus ancienne, en grandes cartes. */
-function storyCard(photo, label, sub) {
+function storyCard(photo, label, sub, story) {
   const u = validPhoto(photo);
   const img = u ? '<img src="' + esc(u) + '" alt="" loading="lazy">' : '<div class="story-ph">🖼️</div>';
-  return '<div class="story-card">' + img + '<span class="story-label">' + esc(label) +
-    (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></div>";
+  return '<button type="button" class="story-card" data-story="' + esc(story) + '">' + img +
+    '<span class="story-label">' + esc(label) +
+    (sub ? "<small>" + esc(sub) + "</small>" : "") + "</span></button>";
 }
 function renderHomeLatest() {
   const box = $("#home-latest-content");
   if (!box) return;
-  const stories = DATA.pros.slice(0, 6).map((p) => storyCard(p.photo_url, p.name, p.trade)).join("") +
-    DATA.posts.slice(0, 6).map((p) => storyCard(p.photo_url, p.title, p.city)).join("");
+  const stories = DATA.pros.slice(0, 6).map((p) => storyCard(p.photo_url, p.name, p.trade, "pro:" + p.id)).join("") +
+    DATA.posts.slice(0, 6).map((p) => storyCard(p.photo_url, p.title, p.city, "post:" + p.id)).join("");
   const feed = [
     ...DATA.pros.map((x) => ({ t: x.created_at, html: proCard(x) })),
     ...DATA.jobs.map((x) => ({ t: x.created_at, html: jobCard(x) })),
@@ -1049,7 +1052,8 @@ function discoShortCard([cat, title, sub, thumb]) {
     '<span class="short-title">' + esc(title) + "</span></a>";
 }
 function discoNewsCard([title, source, url, thumb]) {
-  return '<a class="news-card" target="_blank" rel="noopener" href="' + url + '">' +
+  /* Lien dans le même onglet : au toucher, la page change tout de suite, on VOIT que ça clique. */
+  return '<a class="news-card" href="' + url + '">' +
     '<span class="news-meta"><span class="news-source"><span class="source-badge">' + esc(source.charAt(0)) + "</span>" + esc(source) + "</span>" +
     '<span class="news-title">' + esc(title) + "</span>" +
     '<span class="media-sub">Ouvrir le site de la source</span></span>' +
@@ -1318,6 +1322,23 @@ function wireEvents() {
   document.addEventListener("click", (e) => {
     const goBtn = e.target.closest("[data-go]");
     if (goBtn) { go(goBtn.dataset.go); return; }
+
+    const storyBtn = e.target.closest("[data-story]");
+    if (storyBtn) {
+      /* Une story cliquée ouvre la pièce de la personne et fait défiler
+         jusqu'à SA publication, entourée d'or. */
+      const [kind, id] = String(storyBtn.dataset.story).split(":");
+      go(kind === "pro" ? "travail" : "marche");
+      setTimeout(() => {
+        const el = document.getElementById("card-" + kind + "-" + id);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("flash");
+          setTimeout(() => el.classList.remove("flash"), 2400);
+        }
+      }, 80);
+      return;
+    }
 
     const shareBtn = e.target.closest("[data-share]");
     if (shareBtn) {
