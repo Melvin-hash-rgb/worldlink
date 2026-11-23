@@ -207,12 +207,19 @@ const DISCO_NEWS = [
 /* ---------------- Données statiques : Transferts ---------------- */
 /* Taux INDICATIFS pour 1 EUR (la monnaie de destination dépend du pays tapé) */
 const DEST_CURRENCIES = [
-  [["cameroun"], "XAF", 655.96], [["senegal", "mali", "cote d'ivoire", "burkina faso", "benin", "togo", "niger", "guinee-bissau"], "XOF", 655.96],
+  [["cameroun", "gabon", "tchad", "centrafrique", "guinee equatoriale", "brazzaville"], "XAF", 655.96],
+  [["senegal", "mali", "cote d'ivoire", "burkina faso", "benin", "togo", "niger", "guinee-bissau"], "XOF", 655.96],
   [["congo", "rdc", "kinshasa"], "CDF", 3050], [["kenya"], "KES", 140],
   [["nigeria"], "NGN", 1650], [["ghana"], "GHS", 16.5], [["maroc"], "MAD", 10.9],
   [["canada"], "CAD", 1.47], [["etats-unis", "usa", "amerique", "new york", "houston"], "USD", 1.09],
   [["royaume-uni", "angleterre", "londres"], "GBP", 0.85], [["chine"], "CNY", 7.85],
-  [["suisse"], "CHF", 0.94], [["france", "belgique", "allemagne", "espagne", "italie", "portugal", "europe"], "EUR", 1]
+  [["suisse"], "CHF", 0.94], [["france", "belgique", "allemagne", "espagne", "italie", "portugal", "europe"], "EUR", 1],
+  [["madagascar"], "MGA", 4900], [["ethiopie"], "ETB", 160], [["angola"], "AOA", 950],
+  [["haiti"], "HTG", 132], [["rwanda"], "RWF", 1450], [["ouganda"], "UGX", 3800],
+  [["tanzanie"], "TZS", 2650], [["afrique du sud"], "ZAR", 19.5], [["egypte"], "EGP", 52],
+  [["algerie"], "DZD", 135], [["tunisie"], "TND", 3.15], [["zambie"], "ZMW", 27],
+  [["zimbabwe"], "USD", 1.09], [["mauritanie"], "MRU", 43], [["guinee"], "GNF", 9350],
+  [["burundi"], "BIF", 2950], [["djibouti"], "DJF", 193], [["comores"], "KMF", 492]
 ];
 /* Valeur de 1 unité de la devise d'envoi, en EUR (indicatif) */
 const EUR_VALUE = { EUR: 1, CAD: 0.68, USD: 0.92, GBP: 1.17 };
@@ -230,7 +237,7 @@ function destCurrency(destinationText) {
   for (const [names, code, rate] of DEST_CURRENCIES) {
     if (names.some((n) => d.includes(n))) return { code, rate };
   }
-  return { code: "XAF", rate: 655.96 };
+  return null; /* Pays pas encore dans la table : on ne devine jamais un taux. */
 }
 
 /* Villes et pays que l'assistant et la recherche reconnaissent (saisie libre) */
@@ -248,7 +255,10 @@ const WORLD_PLACES = [
   "bamako", "mali", "ouagadougou", "burkina faso", "niamey", "niger", "cotonou", "benin",
   "lome", "togo", "conakry", "guinee", "rabat", "casablanca", "maroc", "alger", "algerie",
   "tunis", "tunisie", "le caire", "egypte", "addis abeba", "ethiopie",
-  "johannesburg", "afrique du sud", "luanda", "angola", "maputo", "mozambique", "antananarivo", "madagascar"
+  "johannesburg", "afrique du sud", "luanda", "angola", "maputo", "mozambique", "antananarivo", "madagascar",
+  "port-au-prince", "haiti", "kigali", "rwanda", "kampala", "ouganda", "dar es salaam", "tanzanie",
+  "lusaka", "zambie", "harare", "zimbabwe", "nouakchott", "mauritanie", "ndjamena", "tchad",
+  "bangui", "centrafrique", "bujumbura", "burundi", "djibouti"
 ];
 
 /* ---------------- État de l'application ---------------- */
@@ -789,27 +799,40 @@ function computeTransfers(amount, fromCurrency, destination) {
   const dest = destCurrency(destination);
   const eurAmount = amount * (EUR_VALUE[fromCurrency] || 1);
   const results = TRANSFER_SERVICES.map((s) => {
-    const received = Math.max(0, eurAmount - s.fixed) * (1 - s.pct / 100) * dest.rate * (1 - s.margin / 100);
     const feeFrom = s.fixed / (EUR_VALUE[fromCurrency] || 1) + amount * (s.pct / 100);
-    return { ...s, received, feeFrom, destCode: dest.code };
-  }).sort((a, b) => b.received - a.received);
+    const received = dest
+      ? Math.max(0, eurAmount - s.fixed) * (1 - s.pct / 100) * dest.rate * (1 - s.margin / 100)
+      : null;
+    return { ...s, received, feeFrom, destCode: dest ? dest.code : null };
+  });
+  if (dest) results.sort((a, b) => b.received - a.received);
   return results;
 }
 
 function renderTransfers() {
   const amount = Number($("#transfer-amount").value) || 100;
   const from = $("#transfer-currency").value;
-  const destination = $("#transfer-destination").value.trim() || "Cameroun";
-  const results = computeTransfers(amount, from, destination);
+  const destination = $("#transfer-destination").value.trim();
   const symbols = { CAD: "$ CAD", EUR: "€", USD: "$ USD", GBP: "£" };
+  if (!destination) {
+    /* Aucun pays imposé : c'est l'utilisateur qui dit le pays, pas l'application. */
+    $("#transfer-results").innerHTML =
+      '<p class="muted">Tape le montant et le pays de destination — <strong>n\'importe quel pays du monde</strong> — puis touche « Comparer ». La comparaison se fera pour <strong>ton</strong> pays, celui que tu as tapé.</p>';
+    return;
+  }
+  const results = computeTransfers(amount, from, destination);
+  const known = results.length > 0 && results[0].destCode !== null;
   $("#transfer-results").innerHTML =
     '<p class="muted">Pour <strong>' + fmtNum(amount) + " " + esc(symbols[from] || from) +
-    "</strong> envoyés vers <strong>" + esc(destination) + "</strong>, voici ce que ta famille reçoit selon le service (du meilleur au moins bon) :</p>" +
+    "</strong> envoyés vers <strong>" + esc(destination) + "</strong>, " +
+    (known
+      ? "voici ce que ta famille reçoit selon le service (du meilleur au moins bon) :</p>"
+      : "voici les services qui envoient vers ce pays. Je n'ai pas encore le taux indicatif pour <strong>" + esc(destination) + "</strong> : chaque service te donnera le montant exact sur son site officiel.</p>") +
     results.map((r, i) =>
-      '<article class="card transfer-card' + (i === 0 ? " best" : "") + '">' +
-      (i === 0 ? '<span class="best-badge">⭐ Meilleur reçu</span>' : "") +
+      '<article class="card transfer-card' + (known && i === 0 ? " best" : "") + '">' +
+      (known && i === 0 ? '<span class="best-badge">⭐ Meilleur reçu</span>' : "") +
       '<p class="card-title">' + esc(r.name) + "</p>" +
-      '<p class="transfer-received">La famille reçoit ≈ ' + fmtNum(Math.round(r.received)) + " " + esc(r.destCode) + "</p>" +
+      (known ? '<p class="transfer-received">La famille reçoit ≈ ' + fmtNum(Math.round(r.received)) + " " + esc(r.destCode) + "</p>" : "") +
       '<p class="transfer-detail">Frais estimés : ≈ ' + fmtNum(Math.round(r.feeFrom * 10) / 10) + " " + esc(symbols[from] || from) +
       " · Délai : " + esc(r.delay) + " · Réception : Mobile Money, banque ou espèces selon le service</p>" +
       '<div class="card-actions"><a class="btn-gold" style="text-decoration:none" target="_blank" rel="noopener" href="' + r.url + '">Envoyer avec ' + esc(r.name) + "</a></div>" +
@@ -895,10 +918,19 @@ function assistantAnswer(raw) {
 
   /* Transferts */
   if (/(transfert|envoyer|envoi)/.test(q) && /(argent|franc|euro|dollar|fcfa|\$|€)/.test(q) || /envoyer de l'argent/.test(q)) {
-    const dest = place || "cameroun";
     const amt = amount || 100;
-    const best = computeTransfers(amt, "EUR", dest)[0];
-    addBubble("Pour envoyer de l'argent vers " + dest + ", le meilleur service en ce moment (taux indicatifs) est " +
+    if (!place) {
+      addBubble("Vers quel pays veux-tu envoyer l'argent ? Dis-moi le pays et le montant, par exemple : « envoyer 200 dollars au Congo ». Ou ouvre la pièce Transferts et tape n'importe quel pays du monde — c'est toi qui dis le pays.",
+        "bot", '<div class="card-actions"><button type="button" class="btn-gold" data-go="transferts">Ouvrir les Transferts</button></div>');
+      return;
+    }
+    const best = computeTransfers(amt, "EUR", place)[0];
+    if (best.received === null) {
+      addBubble("Pour envoyer de l'argent vers " + place + ", ouvre la pièce Transferts : tu y compares les 6 services qui envoient vers ce pays. Je n'ai pas encore le taux indicatif pour ce pays — chaque service te donnera le montant exact sur son site officiel. WorldLink ne touche jamais à l'argent.",
+        "bot", '<div class="card-actions"><button type="button" class="btn-gold" data-go="transferts">Ouvrir les Transferts</button></div>');
+      return;
+    }
+    addBubble("Pour envoyer de l'argent vers " + place + ", le meilleur service en ce moment (taux indicatifs) est " +
       best.name + " : ta famille recevrait environ " + fmtNum(Math.round(best.received)) + " " + best.destCode +
       " pour " + fmtNum(amt) + " € envoyés. Ouvre la pièce Transferts pour comparer les 6 services et partir chez le service officiel — WorldLink ne touche jamais à l'argent.",
       "bot", '<div class="card-actions"><button type="button" class="btn-gold" data-go="transferts">Ouvrir les Transferts</button></div>');
