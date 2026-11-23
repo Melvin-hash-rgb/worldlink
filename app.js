@@ -80,7 +80,8 @@ function handlePhotoFile(input, key, previewId) {
 function wirePhotoPickers() {
   [["pro-photo-file", "pro", "pro-photo-preview"],
    ["house-photo-file", "house", "house-photo-preview"],
-   ["post-photo-file", "post", "post-photo-preview"]].forEach(([id, key, prev]) => {
+   ["post-photo-file", "post", "post-photo-preview"],
+   ["status-photo-file", "status", "status-photo-preview"]].forEach(([id, key, prev]) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("change", () => handlePhotoFile(el, key, prev));
   });
@@ -97,8 +98,8 @@ function clearPicked(key, previewId) {
 /* ---------------- Brouillons des formulaires ----------------
    Ce que l'utilisateur tape est gardé dans son téléphone : s'il sort du site
    et revient, il retrouve ses informations au lieu de tout recommencer. */
-const DRAFT_FORMS = { "form-pro": "pro", "form-job": "job", "form-housing": "house", "form-post": "post" };
-const PHOTO_FORM = { pro: "form-pro", house: "form-housing", post: "form-post" };
+const DRAFT_FORMS = { "form-pro": "pro", "form-job": "job", "form-housing": "house", "form-post": "post", "form-status": "status" };
+const PHOTO_FORM = { pro: "form-pro", house: "form-housing", post: "form-post", status: "form-status" };
 function draftKey(formId) { return "wl_draft_" + formId + "_" + (currentUser ? currentUser.id : "anon"); }
 function saveDraft(form) {
   if (!form || !DRAFT_FORMS[form.id]) return;
@@ -264,7 +265,7 @@ const WORLD_PLACES = [
 /* ---------------- État de l'application ---------------- */
 let sb = null;              // client Supabase
 let currentUser = null;     // utilisateur connecté
-let DATA = { pros: [], jobs: [], housing: [], posts: [], likes: [], comments: [] };
+let DATA = { pros: [], jobs: [], housing: [], posts: [], likes: [], comments: [], statuses: [] };
 
 function firstName() {
   const full = (currentUser && currentUser.user_metadata && currentUser.user_metadata.full_name) || "";
@@ -277,7 +278,7 @@ function displayName() {
 }
 
 /* ---------------- Navigation ---------------- */
-const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications", "confidentialite", "conditions", "contact"];
+const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications", "confidentialite", "conditions", "contact", "actus"];
 function showPage(name) {
   for (const p of PAGES) {
     const el = $("#page-" + p);
@@ -287,6 +288,7 @@ function showPage(name) {
 }
 function go(name) {
   if (name === "home") renderHomeLatest();
+  if (name === "actus") renderActus();
   if (name === "travail") renderTravail();
   if (name === "logement") renderLogement();
   if (name === "marche") renderMarche();
@@ -371,13 +373,14 @@ async function handleLogout() {
 
 /* ---------------- Chargement des données ---------------- */
 async function loadData() {
-  const [pros, jobs, housing, posts, likes, comments] = await Promise.all([
+  const [pros, jobs, housing, posts, likes, comments, statuses] = await Promise.all([
     sb.from("professionals").select("*").order("created_at", { ascending: false }),
     sb.from("job_offers").select("*").order("created_at", { ascending: false }),
     sb.from("housing").select("*").order("created_at", { ascending: false }),
     sb.from("market_posts").select("*").order("created_at", { ascending: false }),
     sb.from("market_likes").select("*"),
-    sb.from("market_comments").select("*").order("created_at", { ascending: true })
+    sb.from("market_comments").select("*").order("created_at", { ascending: true }),
+    sb.from("statuses").select("*").order("created_at", { ascending: false })
   ]);
   DATA.pros = pros.data || [];
   DATA.jobs = jobs.data || [];
@@ -385,6 +388,7 @@ async function loadData() {
   DATA.posts = posts.data || [];
   DATA.likes = likes.data || [];
   DATA.comments = comments.data || [];
+  DATA.statuses = statuses.data || [];
 }
 
 /* ---------------- Partage ---------------- */
@@ -613,6 +617,63 @@ function renderHomeLatest() {
   }
   box.innerHTML = (stories ? '<div class="stories-row">' + stories + "</div>" : "") +
     feed.map((f) => f.html).join("");
+}
+
+/* ---------------- Pièce Actus : les statuts, façon WhatsApp ----------------
+   Un statut = une photo et/ou un petit message, visible pendant 24 h. */
+function timeAgo(iso) {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (isNaN(s) || s < 60) return "à l'instant";
+  const m = Math.floor(s / 60);
+  if (m < 60) return "il y a " + m + " min";
+  const h = Math.floor(m / 60);
+  if (h < 24) return "il y a " + h + " h";
+  return "il y a " + Math.floor(h / 24) + " j";
+}
+function statusItem(st) {
+  const mine = currentUser && st.user_id === currentUser.id;
+  const u = validPhoto(st.photo_url);
+  return '<article class="card status-card"><div class="status-head">' +
+    '<span class="status-avatar">' + (u ? '<img src="' + esc(u) + '" alt="">' : "👤") + "</span>" +
+    '<div class="status-who"><p class="status-name">' + esc(st.author_name) + "</p>" +
+    '<p class="status-time">' + timeAgo(st.created_at) + "</p></div>" +
+    (mine ? '<button type="button" class="btn-danger" data-delete="statuses|' + st.id + '">Supprimer</button>' : "") +
+    "</div>" +
+    (st.body ? '<p class="card-desc">' + esc(st.body) + "</p>" : "") +
+    (u ? '<img class="status-photo" src="' + esc(u) + '" alt="" loading="lazy">' : "") +
+    "</article>";
+}
+function renderActus() {
+  const box = $("#status-list");
+  if (!box) return;
+  const fresh = DATA.statuses.filter((st) => (Date.now() - new Date(st.created_at).getTime()) < 24 * 3600 * 1000);
+  box.innerHTML = fresh.length ? fresh.map(statusItem).join("") :
+    '<p class="empty-note">Aucun statut pour le moment. Publie le premier : une photo, un mot — il restera visible 24 h, comme sur WhatsApp.</p>';
+}
+async function handleStatusPublish(e) {
+  e.preventDefault();
+  const msg = $("#status-msg");
+  const body = $("#status-text").value.trim();
+  const photo = chosenPhoto("status", "");
+  if (!body && !photo) {
+    msg.textContent = "Écris un mot ou ajoute une photo.";
+    msg.className = "form-msg error";
+    return;
+  }
+  const { error } = await sb.from("statuses").insert({
+    user_id: currentUser.id, author_name: displayName(), body: body || null, photo_url: photo,
+  });
+  if (error) {
+    msg.textContent = "Publication impossible : " + error.message;
+    msg.className = "form-msg error";
+    return;
+  }
+  e.target.reset();
+  clearPicked("status", "status-photo-preview");
+  clearDraft("form-status");
+  msg.textContent = ""; msg.className = "form-msg";
+  await loadData(); renderActus();
+  toast("Statut publié 🎉 Visible pendant 24 h.");
 }
 
 /* ---------------- Page Contact ---------------- */
@@ -863,13 +924,14 @@ const TABLE_LABELS = {
   professionals: ["Travail — mon profil professionnel", (r) => r.trade + " — " + r.city + ", " + r.country],
   job_offers: ["Travail — mes offres d'emploi", (r) => r.title + " chez " + r.company + " — " + r.city],
   housing: ["Mes logements", (r) => r.title + " — " + r.city + " · " + fmtNum(r.price)],
-  market_posts: ["Mes annonces du marché", (r) => r.title + " — " + r.city]
+  market_posts: ["Mes annonces du marché", (r) => r.title + " — " + r.city],
+  statuses: ["Mes statuts", (r) => (r.body || "Statut photo") + " — " + timeAgo(r.created_at)]
 };
 async function deleteMine(table, id) {
   if (!window.confirm("Supprimer cette publication ?")) return;
   const { error } = await sb.from(table).delete().eq("id", id).eq("user_id", currentUser.id);
   if (error) { toast("Suppression impossible : " + error.message); return; }
-  await loadData(); renderMine(); refreshPostLists(); toast("Publication supprimée.");
+  await loadData(); renderMine(); refreshPostLists(); renderActus(); toast("Publication supprimée.");
 }
 function renderMine() {
   const box = $("#my-content");
@@ -877,7 +939,8 @@ function renderMine() {
     professionals: DATA.pros.filter((r) => r.user_id === currentUser.id),
     job_offers: DATA.jobs.filter((r) => r.user_id === currentUser.id),
     housing: DATA.housing.filter((r) => r.user_id === currentUser.id),
-    market_posts: DATA.posts.filter((r) => r.user_id === currentUser.id)
+    market_posts: DATA.posts.filter((r) => r.user_id === currentUser.id),
+    statuses: DATA.statuses.filter((r) => r.user_id === currentUser.id)
   };
   const total = Object.values(mine).reduce((n, arr) => n + arr.length, 0);
   if (!total) {
@@ -1175,6 +1238,8 @@ function wireEvents() {
   $("#form-home-search").addEventListener("submit", doHomeSearch);
   const fc = $("#form-contact");
   if (fc) fc.addEventListener("submit", handleContactWhats);
+  const fs2 = $("#form-status");
+  if (fs2) fs2.addEventListener("submit", handleStatusPublish);
   const bcm = $("#btn-contact-mail");
   if (bcm) bcm.addEventListener("click", handleContactMail);
   $("#form-job-search").addEventListener("submit", handleJobSearch);

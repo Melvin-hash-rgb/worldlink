@@ -106,6 +106,7 @@
     <button type="button" data-go="marche">🛒 Marché</button>
     <button type="button" data-go="transferts">💸 Transferts</button>
     <button type="button" data-go="decouverte">✈️ Découverte</button>
+    <button type="button" data-go="actus">📸 Actus</button>
     <button type="button" data-go="assistant">💬 Assistant</button>
   </nav>
 
@@ -152,6 +153,11 @@
           <span class="room-icon">✈️</span>
           <span class="room-title">Découverte</span>
           <span class="room-desc">Images, vidéos et actualités du monde entier</span>
+        </button>
+        <button type="button" class="room-card" data-go="actus">
+          <span class="room-icon">📸</span>
+          <span class="room-title">Actus</span>
+          <span class="room-desc">Les statuts des membres — photos et nouvelles, visibles 24 h</span>
         </button>
         <button type="button" class="room-card gold" data-go="assistant">
           <span class="room-icon">💬</span>
@@ -361,6 +367,27 @@
         <div id="discovery-news" class="news-list"></div>
         <p class="tiny muted">Les liens ouvrent les sites officiels des médias.</p>
       </div>
+    </section>
+
+    <!-- ===== ACTUS (statuts façon WhatsApp) ===== -->
+    <section id="page-actus" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">📸 Actus</h2>
+      <p class="page-sub">Les statuts des membres : une photo, un mot — visibles pendant 24 h, comme sur WhatsApp.</p>
+
+      <details class="publish-box" open>
+        <summary>➕ Publier mon statut</summary>
+        <form id="form-status" class="stack-form">
+          <label>Ton message <input type="text" id="status-text" maxlength="200" placeholder="Ex. : Disponible pour travaux à Douala cette semaine !"></label>
+          <label>📷 Choisis une photo dans ton téléphone <input type="file" id="status-photo-file" accept="image/*"></label>
+          <img id="status-photo-preview" class="photo-preview hidden" alt="Aperçu de ta photo">
+          <p class="form-msg" id="status-msg"></p>
+          <button type="submit" class="btn-gold">Publier mon statut</button>
+        </form>
+      </details>
+
+      <h3 class="section-title">Mises à jour récentes</h3>
+      <div id="status-list"></div>
     </section>
 
     <!-- ===== ASSISTANT ===== -->
