@@ -177,31 +177,31 @@ const DISCO_IMAGES = [
 ];
 
 const DISCO_VIDEOS = [
-  ["Videos_of_waterfalls", "🎬 Chutes d'eau du monde", "Les plus belles chutes, en vidéo"],
-  ["Videos_of_Africa", "🎬 L'Afrique en vidéo", "Villes, nature et vie quotidienne"],
-  ["Videos_of_New_York_City", "🎬 New York en vidéo", "La ville qui ne dort jamais"],
-  ["Videos_of_mountains", "🎬 Montagnes du monde", "Sommets et grands paysages"],
-  ["Videos_of_animals", "🎬 Animaux du monde", "La faune sauvage en images"],
-  ["Videos_of_beaches", "🎬 Plages du monde", "Le bord de mer, partout"],
-  ["Videos_of_sunsets", "🎬 Couchers de soleil", "Les plus beaux ciels du soir"],
-  ["Videos_of_trains", "🎬 Trains et voyages", "Voyager autrement"],
-  ["Videos_of_lakes", "🎬 Lacs du monde", "Des eaux calmes et magnifiques"],
-  ["Videos_of_rivers", "🎬 Fleuves et rivières", "Les grandes eaux du monde"],
-  ["Videos_of_clouds", "🎬 Nuages et ciel", "Le ciel en mouvement"],
-  ["Videos_of_snow", "🎬 Neige et hiver", "Les paysages blancs"]
+  ["Videos_of_waterfalls", "Chutes d'eau du monde", "Les plus belles chutes, en vidéo", "Niagara_Falls_from_the_Canadian_side.jpg"],
+  ["Videos_of_Africa", "L'Afrique en vidéo", "Villes, nature et vie quotidienne", "Yaounde,_Cameroon.jpg"],
+  ["Videos_of_New_York_City", "New York en vidéo", "La ville qui ne dort jamais", "Manhattan,_New_York_City.jpg"],
+  ["Videos_of_mountains", "Montagnes du monde", "Sommets et grands paysages", "Mount_Everest_as_seen_from_Drukair2_PLW_edit.jpg"],
+  ["Videos_of_animals", "Animaux du monde", "La faune sauvage en images", "Mount_Cameroon.jpg"],
+  ["Videos_of_beaches", "Plages du monde", "Le bord de mer, partout", "Oia,_Santorini,_Greece.jpg"],
+  ["Videos_of_sunsets", "Couchers de soleil", "Les plus beaux ciels du soir", "Grand_Canyon,_Arizona.jpg"],
+  ["Videos_of_trains", "Trains et voyages", "Voyager autrement", "Toronto_-_ON_-_Toronto_Skyline2.jpg"],
+  ["Videos_of_lakes", "Lacs du monde", "Des eaux calmes et magnifiques", "Moraine_Lake.jpg"],
+  ["Videos_of_rivers", "Fleuves et rivières", "Les grandes eaux du monde", "Victoria_Falls_2012.jpg"],
+  ["Videos_of_clouds", "Nuages et ciel", "Le ciel en mouvement", "Aurora_borealis_over_Eielson_Air_Force_Base,_Alaska.jpg"],
+  ["Videos_of_snow", "Neige et hiver", "Les paysages blancs", "Mount_Fuji.jpg"]
 ];
 
 const DISCO_NEWS = [
-  ["L'actualité africaine", "BBC Afrique", "https://www.bbc.com/afrique"],
-  ["L'actualité du Cameroun", "Journal du Cameroun", "https://www.journalducameroun.com/"],
-  ["Infos du Cameroun", "Cameroon Tribune", "https://www.cameroon-tribune.cm/"],
-  ["Le monde en français", "RFI", "https://www.rfi.fr/fr/"],
-  ["Nouvelles internationales", "France 24", "https://www.france24.com/fr/"],
-  ["L'actualité du Canada", "Radio-Canada", "https://ici.radio-canada.ca/"],
-  ["L'actualité du monde", "Le Monde", "https://www.lemonde.fr/"],
-  ["Infos francophones", "TV5Monde", "https://www.tv5monde.com/"],
-  ["L'actualité européenne", "Euronews", "https://fr.euronews.com/"],
-  ["Le monde vu d'Allemagne", "DW — Deutsche Welle", "https://www.dw.com/fr/"]
+  ["L'actualité africaine", "BBC Afrique", "https://www.bbc.com/afrique", "Yaounde,_Cameroon.jpg"],
+  ["L'actualité du Cameroun", "Journal du Cameroun", "https://www.journalducameroun.com/", "Mount_Cameroon.jpg"],
+  ["Infos du Cameroun", "Cameroon Tribune", "https://www.cameroon-tribune.cm/", "Mount_Kilimanjaro.jpg"],
+  ["Le monde en français", "RFI", "https://www.rfi.fr/fr/", "Tour_Eiffel_Wikimedia_Commons.jpg"],
+  ["Nouvelles internationales", "France 24", "https://www.france24.com/fr/", "Louvre_Museum_Wikimedia_Commons.jpg"],
+  ["L'actualité du Canada", "Radio-Canada", "https://ici.radio-canada.ca/", "Montreal_Skyline.jpg"],
+  ["L'actualité du monde", "Le Monde", "https://www.lemonde.fr/", "Big_Ben_2007-1.jpg"],
+  ["Infos francophones", "TV5Monde", "https://www.tv5monde.com/", "Statue_of_Liberty_frontal_2.jpg"],
+  ["L'actualité européenne", "Euronews", "https://fr.euronews.com/", "Colosseum_in_Rome,_Italy_-_April_2007.jpg"],
+  ["Le monde vu d'Allemagne", "DW — Deutsche Welle", "https://www.dw.com/fr/", "Machu_Picchu,_Peru.jpg"]
 ];
 
 /* ---------------- Données statiques : Transferts ---------------- */
@@ -843,23 +843,29 @@ function handleTransfer(e) { e.preventDefault(); renderTransfers(); }
 
 /* ---------------- Pièce Découverte ---------------- */
 function renderDiscovery() {
+  /* Images : grande grille façon Google Images (hauteurs naturelles) */
   $("#discovery-images").innerHTML = DISCO_IMAGES.map(([file, caption]) =>
-    '<div class="media-card"><img src="' + COMMONS + file + "?width=900\" alt=\"" + esc(caption) +
+    '<div class="media-card"><img src="' + COMMONS + file + "?width=700\" alt=\"" + esc(caption) +
     '" loading="lazy" onerror="this.style.display=\'none\'">' +
     '<div class="media-caption">' + esc(caption) + "</div>" +
-    '<div class="media-sub">Photo libre — Wikimedia Commons</div></div>').join("");
+    '<div class="media-sub">Wikimedia Commons</div></div>').join("");
 
-  $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(([cat, title, sub]) =>
-    '<a class="media-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
-    '<div class="media-thumb">🎬</div>' +
-    '<div class="media-caption">' + esc(title) + "</div>" +
-    '<div class="media-sub">' + esc(sub) + " · Wikimedia Commons</div></a>").join("");
+  /* Vidéos : cartes avec vraie vignette et bouton lecture, comme Google Vidéos */
+  $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(([cat, title, sub, thumb]) =>
+    '<a class="video-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
+    '<span class="video-thumb"><img src="' + COMMONS + thumb + "?width=600\" alt=\"" + esc(title) +
+    '" loading="lazy" onerror="this.style.display=\'none\'"><span class="play-badge">▶</span></span>' +
+    '<span class="video-meta"><span class="media-caption">' + esc(title) + "</span>" +
+    '<span class="media-sub">' + esc(sub) + " · Wikimedia Commons</span></span></a>").join("");
 
-  $("#discovery-news").innerHTML = DISCO_NEWS.map(([title, source, url]) =>
-    '<a class="media-card" target="_blank" rel="noopener" href="' + url + '">' +
-    '<div class="media-thumb">📰</div>' +
-    '<div class="media-caption">' + esc(title) + "</div>" +
-    '<div class="media-sub">Source : ' + esc(source) + "</div></a>").join("");
+  /* Actualités : cartes avec source, titre et photo, comme Google Actualités */
+  $("#discovery-news").innerHTML = DISCO_NEWS.map(([title, source, url, thumb]) =>
+    '<a class="news-card" target="_blank" rel="noopener" href="' + url + '">' +
+    '<span class="news-meta"><span class="news-source"><span class="source-badge">' + esc(source.charAt(0)) + "</span>" + esc(source) + "</span>" +
+    '<span class="news-title">' + esc(title) + "</span>" +
+    '<span class="media-sub">Ouvrir le site de la source</span></span>' +
+    '<img class="news-img" src="' + COMMONS + thumb + "?width=400\" alt=\"" + esc(source) +
+    '" loading="lazy" onerror="this.style.display=\'none\'"></a>').join("");
 }
 
 function switchDtab(name) {
