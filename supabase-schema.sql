@@ -185,5 +185,21 @@ create policy "Supprimer son propre commentaire"
   using (auth.uid() = user_id);
 
 -- ============================================================
+--  Droits d'accès aux tables (GRANTS) — INDISPENSABLE.
+--  Sans ces lignes, l'API répond « permission denied for table »
+--  même quand les politiques RLS ci-dessus sont correctes :
+--  les politiques sont la serrure, ces droits sont la porte.
+--  (Correctif ajouté le 2026-11-22 après le premier essai réel.)
+-- ============================================================
+grant select on public.professionals, public.job_offers, public.housing,
+  public.market_posts, public.market_likes, public.market_comments to anon;
+grant select, insert, update, delete on public.professionals, public.job_offers,
+  public.housing, public.market_posts, public.market_likes, public.market_comments
+  to authenticated;
+grant select, insert, update, delete on public.professionals, public.job_offers,
+  public.housing, public.market_posts, public.market_likes, public.market_comments
+  to service_role;
+
+-- ============================================================
 --  Fin du schéma WorldLink.
 -- ============================================================
