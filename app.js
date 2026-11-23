@@ -70,6 +70,8 @@ function handlePhotoFile(input, key, previewId) {
       const prev = document.getElementById(previewId);
       if (prev) { prev.src = pickedPhotos[key]; prev.classList.remove("hidden"); }
       toast("Photo ajoutée 📷");
+      const ownerForm = document.getElementById(PHOTO_FORM[key]);
+      if (ownerForm) saveDraft(ownerForm);
     };
     img.src = reader.result;
   };
@@ -90,6 +92,57 @@ function clearPicked(key, previewId) {
   delete pickedPhotos[key];
   const p = document.getElementById(previewId);
   if (p) { p.removeAttribute("src"); p.classList.add("hidden"); }
+}
+
+/* ---------------- Brouillons des formulaires ----------------
+   Ce que l'utilisateur tape est gardé dans son téléphone : s'il sort du site
+   et revient, il retrouve ses informations au lieu de tout recommencer. */
+const DRAFT_FORMS = { "form-pro": "pro", "form-job": "job", "form-housing": "house", "form-post": "post" };
+const PHOTO_FORM = { pro: "form-pro", house: "form-housing", post: "form-post" };
+function draftKey(formId) { return "wl_draft_" + formId + "_" + (currentUser ? currentUser.id : "anon"); }
+function saveDraft(form) {
+  if (!form || !DRAFT_FORMS[form.id]) return;
+  const data = {};
+  form.querySelectorAll("input, textarea, select").forEach((el) => {
+    if (!el.id || el.type === "file") return;
+    data[el.id] = el.value;
+  });
+  const photoKey = DRAFT_FORMS[form.id];
+  if (photoKey !== "job" && pickedPhotos[photoKey]) data.__photo = pickedPhotos[photoKey];
+  try { localStorage.setItem(draftKey(form.id), JSON.stringify(data)); }
+  catch (e) {
+    /* Photo trop lourde pour la mémoire du téléphone : on garde au moins le texte. */
+    delete data.__photo;
+    try { localStorage.setItem(draftKey(form.id), JSON.stringify(data)); } catch (e2) { /* mémoire pleine : on laisse tomber */ }
+  }
+}
+function restoreDraft(formId) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(draftKey(formId)) || "null"); } catch (e) { data = null; }
+  if (!data) return;
+  Object.keys(data).forEach((id) => {
+    if (id === "__photo") return;
+    const el = document.getElementById(id);
+    if (el) el.value = data[id];
+  });
+  const photoKey = DRAFT_FORMS[formId];
+  if (data.__photo && photoKey !== "job") {
+    pickedPhotos[photoKey] = data.__photo;
+    const prev = document.getElementById(photoKey + "-photo-preview");
+    if (prev) { prev.src = data.__photo; prev.classList.remove("hidden"); }
+  }
+}
+function restoreAllDrafts() { Object.keys(DRAFT_FORMS).forEach(restoreDraft); }
+function clearDraft(formId) { try { localStorage.removeItem(draftKey(formId)); } catch (e) { /* rien */ } }
+function wireDrafts() {
+  Object.keys(DRAFT_FORMS).forEach((formId) => {
+    const form = document.getElementById(formId);
+    if (!form) return;
+    form.addEventListener("input", () => saveDraft(form));
+    form.addEventListener("change", () => saveDraft(form));
+  });
 }
 
 /* ---------------- Données statiques : Découverte ---------------- */
@@ -229,6 +282,7 @@ function go(name) {
   if (name === "mes-publications") renderMine();
   if (name === "transferts") renderTransfers();
   showPage(name);
+  if (name !== "results") { try { localStorage.setItem("wl_last_page", name); } catch (e) { /* rien */ } }
 }
 
 /* ---------------- Écrans principaux ---------------- */
@@ -243,9 +297,13 @@ function enterApp() {
   $("#hello-user").textContent = "Bonjour, " + firstName();
   showOnly("view-app");
   showPage("home");
+  restoreAllDrafts();
   loadData().then(() => {
     renderDiscovery();
     seedAssistant();
+    let last = null;
+    try { last = localStorage.getItem("wl_last_page"); } catch (e) { last = null; }
+    if (last && last !== "home" && last !== "results" && PAGES.includes(last)) go(last);
   });
 }
 
@@ -295,6 +353,7 @@ async function handleSignup(e) {
 async function handleLogout() {
   await sb.auth.signOut();
   currentUser = null;
+  try { localStorage.removeItem("wl_last_page"); } catch (e) { /* rien */ }
   showOnly("view-auth");
 }
 
@@ -615,6 +674,7 @@ async function publishPro(e) {
   if (error) { formMsg("pro-msg", "Oups : " + error.message, false); return; }
   e.target.reset();
   clearPicked("pro", "pro-photo-preview");
+  clearDraft("form-pro");
   formMsg("pro-msg", "Profil publié ! Les clients peuvent maintenant te trouver.", true);
   await loadData(); renderTravail(); toast("Profil professionnel publié 🎉");
 }
@@ -635,6 +695,7 @@ async function publishJob(e) {
   const { error } = await sb.from("job_offers").insert(row);
   if (error) { formMsg("job-msg", "Oups : " + error.message, false); return; }
   e.target.reset();
+  clearDraft("form-job");
   formMsg("job-msg", "Offre publiée ! Les chercheurs d'emploi peuvent postuler.", true);
   await loadData(); renderTravail(); toast("Offre d'emploi publiée 🎉");
 }
@@ -656,6 +717,7 @@ async function publishHousing(e) {
   if (error) { formMsg("house-msg", "Oups : " + error.message, false); return; }
   e.target.reset();
   clearPicked("house", "house-photo-preview");
+  clearDraft("form-housing");
   formMsg("house-msg", "Logement publié ! Les gens qui cherchent dans ta ville le verront.", true);
   await loadData(); renderLogement(); toast("Logement publié 🎉");
 }
@@ -677,6 +739,7 @@ async function publishPost(e) {
   if (error) { formMsg("post-msg", "Oups : " + error.message, false); return; }
   e.target.reset();
   clearPicked("post", "post-photo-preview");
+  clearDraft("form-post");
   formMsg("post-msg", "Annonce publiée ! Partage-la à tes contacts avec le bouton Partager.", true);
   await loadData(); renderMarche(); toast("Annonce publiée 🎉");
 }
@@ -970,6 +1033,7 @@ function wireEvents() {
   $("#form-housing").addEventListener("submit", publishHousing);
   $("#form-post").addEventListener("submit", publishPost);
   wirePhotoPickers();
+  wireDrafts();
   $("#form-chat").addEventListener("submit", handleChat);
 
   /* Onglets Découverte */
