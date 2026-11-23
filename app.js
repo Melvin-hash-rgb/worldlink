@@ -277,7 +277,7 @@ function displayName() {
 }
 
 /* ---------------- Navigation ---------------- */
-const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications", "confidentialite", "conditions"];
+const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications", "confidentialite", "conditions", "contact"];
 function showPage(name) {
   for (const p of PAGES) {
     const el = $("#page-" + p);
@@ -286,6 +286,7 @@ function showPage(name) {
   window.scrollTo(0, 0);
 }
 function go(name) {
+  if (name === "home") renderHomeLatest();
   if (name === "travail") renderTravail();
   if (name === "logement") renderLogement();
   if (name === "marche") renderMarche();
@@ -310,6 +311,7 @@ function enterApp() {
   restoreAllDrafts();
   loadData().then(() => {
     renderDiscovery();
+    renderHomeLatest();
     seedAssistant();
     let last = null;
     try { last = localStorage.getItem("wl_last_page"); } catch (e) { last = null; }
@@ -468,16 +470,18 @@ function photoHtml(url, emoji) {
 }
 
 function proCard(p) {
+  const tel = esc(String(p.phone).replace(/\s+/g, ""));
   return '<article class="card visual-card">' + photoBig(p.photo_url, "🧑‍🔧") +
     '<div class="card-body">' +
     '<p class="card-title">' + esc(p.name) + ' <span class="badge">' + esc(p.trade) + "</span></p>" +
     '<p class="card-meta">📍 ' + esc(p.city) + ", " + esc(p.country) +
     (p.age ? " · " + esc(p.age) + " ans" : "") + "</p>" +
     '<p class="card-meta">📞 ' + esc(p.phone) + "</p>" +
-    '<div class="card-actions">' +
-    '<a class="btn-action" href="tel:' + esc(String(p.phone).replace(/\s+/g, "")) + '">📞 Appeler</a>' +
-    itineraireBtn(p.trade + " " + p.city + " " + p.country) +
-    '<button type="button" class="btn-action" data-share="' + esc(p.trade + " — " + p.name) + "|" + esc(p.city) + '">↗️ Partager</button>' +
+    '<div class="action-circles">' +
+    '<a class="circle-btn" href="tel:' + tel + '"><span class="circle-ico">📞</span><span class="circle-label">Appeler</span></a>' +
+    '<a class="circle-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(p.trade + " " + p.city + " " + p.country) + '"><span class="circle-ico">🧭</span><span class="circle-label">Itinéraire</span></a>' +
+    '<button type="button" class="circle-btn" data-share="' + esc(p.trade + " — " + p.name) + "|" + esc(p.city) + '"><span class="circle-ico">↗️</span><span class="circle-label">Partager</span></button>' +
     "</div></div></article>";
 }
 
@@ -582,6 +586,34 @@ function doHomeSearch(e) {
   box.innerHTML = html;
   showPage("results");
 }
+
+/* ---------------- Accueil : les nouveautés (vraies dernières annonces) ---------------- */
+function renderHomeLatest() {
+  const box = $("#home-latest-content");
+  if (!box) return;
+  const items = DATA.pros.slice(0, 2).map(proCard).join("") +
+    DATA.housing.slice(0, 2).map(housingCard).join("") +
+    DATA.posts.slice(0, 2).map(postCard).join("");
+  box.innerHTML = items ||
+    '<p class="empty-note">WorldLink vient d\'ouvrir : les premières annonces arrivent. Publie la tienne et sois parmi les premiers de ta ville.</p>';
+}
+
+/* ---------------- Page Contact ---------------- */
+const WL_EMAIL = "bamenmelvinjunior@gmail.com";
+const WL_WHATSAPP = "14382217846";
+function contactLinks() {
+  const name = (($("#contact-name") || {}).value || "").trim();
+  const email = (($("#contact-email") || {}).value || "").trim();
+  const message = (($("#contact-message") || {}).value || "").trim();
+  const text = "Bonjour WorldLink, je suis " + name + ". " + message + (email ? " (Mon courriel : " + email + ")" : "");
+  return {
+    wa: "https://wa.me/" + WL_WHATSAPP + "?text=" + encodeURIComponent(text),
+    mail: "mailto:" + WL_EMAIL + "?subject=" + encodeURIComponent("Message depuis WorldLink — " + name) +
+      "&body=" + encodeURIComponent(text),
+  };
+}
+function handleContactWhats(e) { e.preventDefault(); window.open(contactLinks().wa, "_blank"); }
+function handleContactMail() { window.location.href = contactLinks().mail; }
 
 /* ---------------- Pièce Travail ---------------- */
 let jobFilter = { trade: "", place: "" };
@@ -1124,6 +1156,10 @@ function wireEvents() {
 
   /* Formulaires des pièces */
   $("#form-home-search").addEventListener("submit", doHomeSearch);
+  const fc = $("#form-contact");
+  if (fc) fc.addEventListener("submit", handleContactWhats);
+  const bcm = $("#btn-contact-mail");
+  if (bcm) bcm.addEventListener("click", handleContactMail);
   $("#form-job-search").addEventListener("submit", handleJobSearch);
   $("#form-housing-search").addEventListener("submit", handleHousingSearch);
   $("#form-transfer").addEventListener("submit", handleTransfer);

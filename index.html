@@ -93,6 +93,7 @@
     </button>
     <div class="header-actions">
       <span id="hello-user" class="hello"></span>
+      <button type="button" class="btn-header" data-go="contact">✉️ Contact</button>
       <button type="button" class="btn-header" data-go="mes-publications">Mes publications</button>
       <button type="button" class="btn-header" id="btn-logout">Se déconnecter</button>
     </div>
@@ -157,6 +158,21 @@
           <span class="room-title">Assistant WorldLink</span>
           <span class="room-desc">Pose ta question avec tes mots — il cherche pour toi</span>
         </button>
+      </div>
+
+      <h3 class="section-title">🆕 Nouveautés sur WorldLink</h3>
+      <div id="home-latest-content"></div>
+
+      <div class="trust-band">
+        <span>✅ 100 % gratuit pour chercher</span>
+        <span>🙋 Les membres s'inscrivent eux-mêmes</span>
+        <span>🔒 WorldLink ne touche jamais à ton argent</span>
+      </div>
+
+      <div class="about-block">
+        <h3>À propos de WorldLink</h3>
+        <p>WorldLink est né à Montréal, d'une conviction simple : <strong>faciliter la vie aux gens</strong>. Trouver un travailleur de confiance, un emploi, un logement ou un article ne devrait jamais être un parcours du combattant — ni à Montréal, ni à Douala, ni nulle part dans le monde.</p>
+        <p>Son fondateur, <strong>Bamen Melvin Junior</strong>, étudiant en programmation, construit WorldLink pièce par pièce, avec ses premiers membres. Ici, chacun s'inscrit lui-même et publie ses propres annonces : du vrai, et du propre.</p>
       </div>
 
       <div class="final-cta">
@@ -370,6 +386,29 @@
       <div id="my-content"></div>
     </section>
 
+    <!-- ===== CONTACT ===== -->
+    <section id="page-contact" class="page hidden">
+      <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
+      <h2 class="page-title">✉️ Contact</h2>
+      <p class="page-sub">Une question, un problème, une idée pour WorldLink ? Écris-nous — on répond vite.</p>
+
+      <div class="notice-card">
+        <p>📍 <strong>Montréal, Canada</strong></p>
+        <p>✉️ <a href="mailto:bamenmelvinjunior@gmail.com">bamenmelvinjunior@gmail.com</a></p>
+        <p>📞 <a href="tel:+14382217846">+1 438-221-7846</a></p>
+        <p><a class="btn-wa" href="https://wa.me/14382217846?text=Bonjour%20WorldLink%20!" target="_blank" rel="noopener">💬 Écrire sur WhatsApp</a></p>
+      </div>
+
+      <form id="form-contact" class="stack-form contact-form">
+        <label>Ton nom <input type="text" id="contact-name" required></label>
+        <label>Ton courriel <input type="email" id="contact-email" required></label>
+        <label>Ton message <textarea id="contact-message" rows="4" required placeholder="Écris ton message…"></textarea></label>
+        <button type="submit" class="btn-gold">💬 Envoyer par WhatsApp</button>
+        <button type="button" class="btn-outline" id="btn-contact-mail">✉️ Envoyer par courriel</button>
+        <p class="tiny muted">Le bouton ouvre WhatsApp ou ton application de courriel avec le message déjà écrit : tu n'as plus qu'à l'envoyer.</p>
+      </form>
+    </section>
+
     <!-- ===== CONFIDENTIALITÉ ===== -->
     <section id="page-confidentialite" class="page hidden">
       <button type="button" class="btn-back" data-go="home">← Retour à l'accueil</button>
@@ -421,6 +460,8 @@
         <p>📍 Montréal, Canada</p>
         <p>✉️ <a href="mailto:bamenmelvinjunior@gmail.com">bamenmelvinjunior@gmail.com</a></p>
         <p>📞 <a href="tel:+14382217846">+1 438-221-7846</a></p>
+        <p>💬 <a href="https://wa.me/14382217846" target="_blank" rel="noopener">WhatsApp</a></p>
+        <button type="button" class="footer-link" data-go="contact">📝 Écris-nous</button>
       </div>
       <div class="footer-col">
         <p class="footer-title">Légal</p>
@@ -430,6 +471,8 @@
     </div>
     <p class="footer-bottom">© 2026 WorldLink — Bamen Melvin Junior. Tous droits réservés.</p>
   </footer>
+
+  <a class="float-wa" href="https://wa.me/14382217846?text=Bonjour%20WorldLink%20!" target="_blank" rel="noopener" aria-label="Écrire à WorldLink sur WhatsApp">💬</a>
 </div>
 
 <div id="toast" class="toast hidden"></div>
