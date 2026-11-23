@@ -1033,11 +1033,20 @@ function discoImageCard([file, caption]) {
     '<div class="media-sub">Wikimedia Commons</div></div>';
 }
 function discoVideoCard([cat, title, sub, thumb]) {
-  return '<a class="video-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
-    '<span class="video-thumb"><img src="' + COMMONS + thumb + "?width=600\" alt=\"" + esc(title) +
+  /* Carte vidéo façon YouTube : grande vignette, avatar rond, titre, source. */
+  return '<a class="yt-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
+    '<span class="yt-thumb"><img src="' + COMMONS + thumb + "?width=700\" alt=\"" + esc(title) +
     '" loading="lazy" onerror="this.style.display=\'none\'"><span class="play-badge">▶</span></span>' +
-    '<span class="video-meta"><span class="media-caption">' + esc(title) + "</span>" +
-    '<span class="media-sub">' + esc(sub) + " · Wikimedia Commons</span></span></a>";
+    '<span class="yt-meta"><span class="yt-avatar">W</span>' +
+    '<span class="yt-text"><span class="yt-title">' + esc(title) + "</span>" +
+    '<span class="yt-sub">Wikimedia Commons · ' + esc(sub) + "</span></span></span></a>";
+}
+function discoShortCard([cat, title, sub, thumb]) {
+  /* Carte verticale façon Shorts : vignette en portrait, titre en bas. */
+  return '<a class="short-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
+    '<img src="' + COMMONS + thumb + "?width=400\" alt=\"" + esc(title) +
+    '" loading="lazy" onerror="this.style.display=\'none\'">' +
+    '<span class="short-title">' + esc(title) + "</span></a>";
 }
 function discoNewsCard([title, source, url, thumb]) {
   return '<a class="news-card" target="_blank" rel="noopener" href="' + url + '">' +
@@ -1059,8 +1068,11 @@ function renderDiscovery() {
   /* Images : grille Explorer façon Instagram (tuiles carrées, bord à bord) */
   $("#discovery-images").innerHTML = DISCO_IMAGES.map(discoExploreTile).join("");
 
-  /* Vidéos : cartes avec vraie vignette et bouton lecture, comme Google Vidéos */
+  /* Vidéos : l'onglet YouTube de WorldLink — rangée « Courtes vidéos » en haut,
+     puis les grandes cartes vidéo façon YouTube */
   $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(discoVideoCard).join("");
+  const shortsBox = $("#discovery-shorts");
+  if (shortsBox) shortsBox.innerHTML = DISCO_VIDEOS.slice(0, 6).map(discoShortCard).join("");
 
   /* Actualités : cartes avec source, titre et photo, comme Google Actualités */
   $("#discovery-news").innerHTML = DISCO_NEWS.map(discoNewsCard).join("");
