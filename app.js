@@ -477,16 +477,20 @@ function photoHtml(url, emoji) {
 
 function proCard(p) {
   const tel = esc(String(p.phone).replace(/\s+/g, ""));
+  /* Itinéraire : l'adresse exacte de la personne quand elle l'a donnée,
+     sinon sa ville (un itinéraire doit mener quelque part de précis). */
+  const dest = p.address ? (p.address + ", " + p.city + ", " + p.country)
+    : (p.trade + " " + p.city + " " + p.country);
   return '<article class="card visual-card" id="card-pro-' + p.id + '">' + photoBig(p.photo_url, "🧑‍🔧") +
     '<div class="card-body">' +
     '<p class="card-title">' + esc(p.name) + ' <span class="badge">' + esc(p.trade) + "</span></p>" +
-    '<p class="card-meta">📍 ' + esc(p.city) + ", " + esc(p.country) +
+    '<p class="card-meta">📍 ' + (p.address ? esc(p.address) + ", " : "") + esc(p.city) + ", " + esc(p.country) +
     (p.age ? " · " + esc(p.age) + " ans" : "") + "</p>" +
     '<p class="card-meta">📞 ' + esc(p.phone) + "</p>" +
     '<div class="action-circles">' +
     '<a class="circle-btn" href="tel:' + tel + '"><span class="circle-ico">📞</span><span class="circle-label">Appeler</span></a>' +
     '<a class="circle-btn" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' +
-      encodeURIComponent(p.trade + " " + p.city + " " + p.country) + '"><span class="circle-ico">🧭</span><span class="circle-label">Itinéraire</span></a>' +
+      encodeURIComponent(dest) + '"><span class="circle-ico">🧭</span><span class="circle-label">Itinéraire</span></a>' +
     '<button type="button" class="circle-btn" data-share="' + esc(p.trade + " — " + p.name) + "|" + esc(p.city) + '"><span class="circle-ico">↗️</span><span class="circle-label">Partager</span></button>' +
     "</div></div></article>";
 }
@@ -510,12 +514,12 @@ function housingCard(h) {
   return '<article class="card visual-card">' + photoBig(h.photo_url, "🏠") +
     '<div class="card-body">' +
     '<p class="card-title">' + esc(h.title) + "</p>" +
-    '<p class="card-meta">📍 ' + esc(h.city) + ", " + esc(h.country) + "</p>" +
+    '<p class="card-meta">📍 ' + (h.address ? esc(h.address) + ", " : "") + esc(h.city) + ", " + esc(h.country) + "</p>" +
     '<p class="card-price">' + fmtNum(h.price) + "</p>" +
     (h.description ? '<p class="card-desc">' + esc(h.description) + "</p>" : "") +
     '<div class="card-actions">' +
     (h.contact ? '<button type="button" class="btn-action" data-contact="' + esc(h.contact) + '">📞 Contacter le propriétaire</button>' : "") +
-    itineraireBtn(h.title + " " + h.city + " " + h.country) +
+    itineraireBtn((h.address ? h.address + ", " : h.title + " ") + h.city + " " + h.country) +
     '<button type="button" class="btn-action" data-share="' + esc(h.title) + "|" + esc(h.city) + '">↗️ Partager</button>' +
     "</div>" +
     (h.contact ? '<div class="card-contact hidden">📞 Contact du propriétaire : <strong>' + esc(h.contact) + "</strong></div>" : "") +
@@ -856,6 +860,7 @@ async function publishPro(e) {
     age: $("#pro-age").value ? Number($("#pro-age").value) : null,
     city: $("#pro-city").value.trim(),
     country: $("#pro-country").value.trim(),
+    address: $("#pro-address").value.trim() || null,
     phone: $("#pro-phone").value.trim(),
     photo_url: chosenPhoto("pro", $("#pro-photo").value)
   };
@@ -897,6 +902,7 @@ async function publishHousing(e) {
     title: $("#house-title").value.trim(),
     city: $("#house-city").value.trim(),
     country: $("#house-country").value.trim(),
+    address: $("#house-address").value.trim() || null,
     price: Number($("#house-price").value),
     description: $("#house-desc").value.trim() || null,
     photo_url: chosenPhoto("house", $("#house-photo").value),
