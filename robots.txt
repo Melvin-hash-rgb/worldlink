@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://melvin-hash-rgb.github.io/worldlink/sitemap.xml
