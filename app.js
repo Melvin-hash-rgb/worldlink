@@ -277,7 +277,7 @@ function displayName() {
 }
 
 /* ---------------- Navigation ---------------- */
-const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications"];
+const PAGES = ["home", "results", "travail", "logement", "marche", "transferts", "decouverte", "assistant", "mes-publications", "confidentialite", "conditions"];
 function showPage(name) {
   for (const p of PAGES) {
     const el = $("#page-" + p);
