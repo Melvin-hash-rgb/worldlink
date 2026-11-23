@@ -214,6 +214,30 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
 .mixed-feed .media-card img { height: 215px; }
 .mixed-feed .video-card, .mixed-feed .news-card { margin: 0; }
 
+/* Publications façon Instagram : en-tête du vendeur, barre d'icônes, légende */
+.ig-post { overflow: hidden; }
+.ig-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.ig-avatar { width: 38px; height: 38px; border-radius: 50%; flex: none;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--gold) 130%);
+  color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.ig-who { display: flex; flex-direction: column; line-height: 1.25; }
+.ig-where { font-size: 0.78rem; color: var(--muted); }
+.ig-actions { display: flex; align-items: center; gap: 4px; }
+.ig-btn { background: none; border: none; font-size: 1.35rem; cursor: pointer; padding: 2px 5px; line-height: 1; }
+.ig-pin { text-decoration: none; }
+.ig-order { margin-left: auto; background: var(--gold); color: var(--blue-dark); border: none;
+  border-radius: 999px; padding: 7px 13px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+.ig-likes { font-weight: 700; font-size: 0.9rem; margin: 7px 0 2px; }
+.ig-caption { font-size: 0.92rem; margin: 2px 0; }
+.ig-view-comments { background: none; border: none; color: var(--muted); cursor: pointer;
+  padding: 0; font-size: 0.88rem; margin-top: 2px; }
+.ig-time { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; margin-top: 4px; }
+
+/* Découverte Images : grille Explorer façon Instagram (tuiles carrées bord à bord) */
+.explore-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.explore-tile { display: block; }
+.explore-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: #E8EDF7; }
+
 /* Actus : les statuts façon WhatsApp (photo ronde, nom, heure) */
 .status-card { padding: 14px 16px; }
 .status-head { display: flex; align-items: center; gap: 12px; }

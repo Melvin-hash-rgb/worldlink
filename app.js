@@ -527,30 +527,41 @@ function userLiked(postId) {
 function postComments(postId) { return DATA.comments.filter((c) => c.post_id === postId); }
 
 function postCard(p) {
+  /* Publication façon Instagram : en-tête du vendeur, grande photo, barre
+     d'icônes (cœur, commentaire, partage), nombre de J'aime, légende. */
   const liked = userLiked(p.id);
   const comments = postComments(p.id);
+  const nLikes = likesCount(p.id);
+  const seller = p.seller_name || "Membre WorldLink";
+  const initial = esc(seller.trim().charAt(0).toUpperCase() || "W");
   const commentsHtml = comments.map((c) =>
     '<div class="comment"><span class="c-author">' + esc(c.author_name || "Utilisateur") +
     " :</span> " + esc(c.body) + "</div>").join("");
-  return '<article class="card visual-card">' + photoBig(p.photo_url, "🛍️") +
+  return '<article class="card ig-post">' +
+    '<div class="ig-head"><span class="ig-avatar">' + initial + '</span>' +
+    '<span class="ig-who"><strong>' + esc(seller) + "</strong>" +
+    '<span class="ig-where">📍 ' + esc(p.city) + (p.country ? ", " + esc(p.country) : "") + "</span></span></div>" +
+    photoBig(p.photo_url, "🛍️") +
     '<div class="card-body">' +
-    '<p class="card-title">' + esc(p.title) + "</p>" +
-    '<p class="card-meta">📍 ' + esc(p.city) + (p.country ? ", " + esc(p.country) : "") +
-    (p.seller_name ? " · Vendeur : " + esc(p.seller_name) : "") + "</p>" +
-    (p.price !== null && p.price !== "" && p.price !== undefined ? '<p class="card-price">' + fmtNum(p.price) + "</p>" : "") +
-    (p.description ? '<p class="card-desc">' + esc(p.description) + "</p>" : "") +
-    '<div class="card-actions">' +
-    '<button type="button" class="btn-action' + (liked ? " liked" : "") + '" data-like="' + p.id + '">' + (liked ? "❤️" : "🤍") + " J'aime (" + likesCount(p.id) + ")</button>" +
-    '<button type="button" class="btn-action" data-comments="' + p.id + '">💬 Commentaires (' + comments.length + ")</button>" +
-    '<button type="button" class="btn-action" data-contact="' + esc(p.contact) + '">🛒 Commander</button>' +
-    itineraireBtn(p.title + " " + p.city + " " + (p.country || "")) +
-    '<button type="button" class="btn-action" data-share="' + esc(p.title) + "|" + esc(p.city) + '">↗️ Partager</button>' +
+    '<div class="ig-actions">' +
+    '<button type="button" class="ig-btn" data-like="' + p.id + '" aria-label="J\'aime">' + (liked ? "❤️" : "🤍") + "</button>" +
+    '<button type="button" class="ig-btn" data-comments="' + p.id + '" aria-label="Commentaires">💬</button>' +
+    '<button type="button" class="ig-btn" data-share="' + esc(p.title) + "|" + esc(p.city) + '" aria-label="Partager">↗️</button>' +
+    '<a class="ig-btn ig-pin" target="_blank" rel="noopener" aria-label="Itinéraire" href="https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(p.title + " " + p.city + " " + (p.country || "")) + '">🧭</a>' +
+    '<button type="button" class="ig-order" data-contact="' + esc(p.contact) + '">🛒 Commander</button>' +
     "</div>" +
+    (nLikes ? '<p class="ig-likes">❤️ ' + nLikes + " J'aime</p>" : "") +
+    '<p class="ig-caption"><strong>' + esc(seller) + "</strong> " + esc(p.title) +
+    (p.price !== null && p.price !== "" && p.price !== undefined ? " — <strong>" + fmtNum(p.price) + "</strong>" : "") +
+    (p.description ? " · " + esc(p.description) : "") + "</p>" +
+    (comments.length ? '<button type="button" class="ig-view-comments" data-comments="' + p.id + '">Voir les ' + comments.length + " commentaire" + (comments.length > 1 ? "s" : "") + "</button>" : "") +
+    '<p class="ig-time">' + timeAgo(p.created_at) + "</p>" +
     '<div class="card-contact hidden">🛒 Pour commander, contacte le vendeur : <strong>' + esc(p.contact) + "</strong></div>" +
     '<div class="comments hidden" id="comments-' + p.id + '">' + commentsHtml +
     '<form class="comment-form" data-comment-form="' + p.id + '">' +
-    '<input type="text" placeholder="Écris un commentaire…" required maxlength="500">' +
-    '<button type="submit" class="btn-outline">Envoyer</button></form></div>' +
+    '<input type="text" placeholder="Ajoute un commentaire…" required maxlength="500">' +
+    '<button type="submit" class="btn-outline">Publier</button></form></div>' +
     "</div></article>";
 }
 
@@ -1037,9 +1048,16 @@ function discoNewsCard([title, source, url, thumb]) {
     '" loading="lazy" onerror="this.style.display=\'none\'"></a>';
 }
 
+function discoExploreTile([file, caption]) {
+  /* Tuile carrée de la grille Explorer façon Instagram ; le toucher ouvre la page du fichier. */
+  return '<a class="explore-tile" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/File:' + file + '">' +
+    '<img src="' + COMMONS + file + "?width=400\" alt=\"" + esc(caption) +
+    '" loading="lazy" onerror="this.style.display=\'none\'"></a>';
+}
+
 function renderDiscovery() {
-  /* Images : grande grille façon Google Images (hauteurs naturelles) */
-  $("#discovery-images").innerHTML = DISCO_IMAGES.map(discoImageCard).join("");
+  /* Images : grille Explorer façon Instagram (tuiles carrées, bord à bord) */
+  $("#discovery-images").innerHTML = DISCO_IMAGES.map(discoExploreTile).join("");
 
   /* Vidéos : cartes avec vraie vignette et bouton lecture, comme Google Vidéos */
   $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(discoVideoCard).join("");
