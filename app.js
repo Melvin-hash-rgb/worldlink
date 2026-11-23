@@ -1015,36 +1015,56 @@ function renderTransfers() {
 function handleTransfer(e) { e.preventDefault(); renderTransfers(); }
 
 /* ---------------- Pièce Découverte ---------------- */
-function renderDiscovery() {
-  /* Images : grande grille façon Google Images (hauteurs naturelles) */
-  $("#discovery-images").innerHTML = DISCO_IMAGES.map(([file, caption]) =>
-    '<div class="media-card"><img src="' + COMMONS + file + "?width=700\" alt=\"" + esc(caption) +
+function discoImageCard([file, caption]) {
+  return '<div class="media-card"><img src="' + COMMONS + file + "?width=700\" alt=\"" + esc(caption) +
     '" loading="lazy" onerror="this.style.display=\'none\'">' +
     '<div class="media-caption">' + esc(caption) + "</div>" +
-    '<div class="media-sub">Wikimedia Commons</div></div>').join("");
-
-  /* Vidéos : cartes avec vraie vignette et bouton lecture, comme Google Vidéos */
-  $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(([cat, title, sub, thumb]) =>
-    '<a class="video-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
+    '<div class="media-sub">Wikimedia Commons</div></div>';
+}
+function discoVideoCard([cat, title, sub, thumb]) {
+  return '<a class="video-card" target="_blank" rel="noopener" href="https://commons.wikimedia.org/wiki/Category:' + cat + '">' +
     '<span class="video-thumb"><img src="' + COMMONS + thumb + "?width=600\" alt=\"" + esc(title) +
     '" loading="lazy" onerror="this.style.display=\'none\'"><span class="play-badge">▶</span></span>' +
     '<span class="video-meta"><span class="media-caption">' + esc(title) + "</span>" +
-    '<span class="media-sub">' + esc(sub) + " · Wikimedia Commons</span></span></a>").join("");
-
-  /* Actualités : cartes avec source, titre et photo, comme Google Actualités */
-  $("#discovery-news").innerHTML = DISCO_NEWS.map(([title, source, url, thumb]) =>
-    '<a class="news-card" target="_blank" rel="noopener" href="' + url + '">' +
+    '<span class="media-sub">' + esc(sub) + " · Wikimedia Commons</span></span></a>";
+}
+function discoNewsCard([title, source, url, thumb]) {
+  return '<a class="news-card" target="_blank" rel="noopener" href="' + url + '">' +
     '<span class="news-meta"><span class="news-source"><span class="source-badge">' + esc(source.charAt(0)) + "</span>" + esc(source) + "</span>" +
     '<span class="news-title">' + esc(title) + "</span>" +
     '<span class="media-sub">Ouvrir le site de la source</span></span>' +
     '<img class="news-img" src="' + COMMONS + thumb + "?width=400\" alt=\"" + esc(source) +
-    '" loading="lazy" onerror="this.style.display=\'none\'"></a>').join("");
+    '" loading="lazy" onerror="this.style.display=\'none\'"></a>';
+}
+
+function renderDiscovery() {
+  /* Images : grande grille façon Google Images (hauteurs naturelles) */
+  $("#discovery-images").innerHTML = DISCO_IMAGES.map(discoImageCard).join("");
+
+  /* Vidéos : cartes avec vraie vignette et bouton lecture, comme Google Vidéos */
+  $("#discovery-videos").innerHTML = DISCO_VIDEOS.map(discoVideoCard).join("");
+
+  /* Actualités : cartes avec source, titre et photo, comme Google Actualités */
+  $("#discovery-news").innerHTML = DISCO_NEWS.map(discoNewsCard).join("");
+
+  /* Pour vous : le fleuve mélangé façon Phoenix — images, actualités et vidéos
+     défilent ensemble, en grandes cartes, sans fin. */
+  const feed = [];
+  const rounds = Math.max(DISCO_IMAGES.length / 2, DISCO_NEWS.length, DISCO_VIDEOS.length);
+  for (let i = 0; i < rounds; i++) {
+    if (DISCO_IMAGES[2 * i]) feed.push(discoImageCard(DISCO_IMAGES[2 * i]));
+    if (DISCO_NEWS[i]) feed.push(discoNewsCard(DISCO_NEWS[i]));
+    if (DISCO_IMAGES[2 * i + 1]) feed.push(discoImageCard(DISCO_IMAGES[2 * i + 1]));
+    if (DISCO_VIDEOS[i]) feed.push(discoVideoCard(DISCO_VIDEOS[i]));
+  }
+  const feedBox = $("#discovery-feed");
+  if (feedBox) feedBox.innerHTML = feed.join("");
 }
 
 function switchDtab(name) {
   document.querySelectorAll(".tab-btn").forEach((b) =>
     b.classList.toggle("active", b.dataset.dtab === name));
-  for (const t of ["images", "videos", "actus"]) {
+  for (const t of ["pourvous", "images", "videos", "actus"]) {
     $("#dtab-" + t).classList.toggle("hidden", t !== name);
   }
 }

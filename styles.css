@@ -209,6 +209,11 @@ input, select, textarea { font-family: inherit; font-size: 1rem; }
   padding-top: 14px; border-top: 1px solid var(--border); font-size: 0.85rem;
 }
 
+/* Découverte « Pour vous » : le fleuve mélangé façon Phoenix, en grandes cartes */
+.mixed-feed { display: flex; flex-direction: column; gap: 14px; }
+.mixed-feed .media-card img { height: 215px; }
+.mixed-feed .video-card, .mixed-feed .news-card { margin: 0; }
+
 /* Actus : les statuts façon WhatsApp (photo ronde, nom, heure) */
 .status-card { padding: 14px 16px; }
 .status-head { display: flex; align-items: center; gap: 12px; }

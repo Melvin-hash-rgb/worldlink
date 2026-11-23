@@ -350,12 +350,17 @@
       <p class="page-sub">Le monde entier à regarder : choisis ce que tu veux voir.</p>
 
       <div class="tabs">
-        <button type="button" class="tab-btn active" data-dtab="images">🖼️ Images</button>
+        <button type="button" class="tab-btn active" data-dtab="pourvous">🌍 Pour vous</button>
+        <button type="button" class="tab-btn" data-dtab="images">🖼️ Images</button>
         <button type="button" class="tab-btn" data-dtab="videos">🎬 Vidéos</button>
         <button type="button" class="tab-btn" data-dtab="actus">📰 Actualités</button>
       </div>
 
-      <div id="dtab-images" class="dtab-panel">
+      <div id="dtab-pourvous" class="dtab-panel">
+        <div id="discovery-feed" class="mixed-feed"></div>
+        <p class="tiny muted">Images et vidéos libres — Wikimedia Commons. Actualités : les liens ouvrent les sites officiels des médias.</p>
+      </div>
+      <div id="dtab-images" class="dtab-panel hidden">
         <div id="discovery-images" class="masonry"></div>
         <p class="tiny muted">Photos libres de droits — Wikimedia Commons.</p>
       </div>
